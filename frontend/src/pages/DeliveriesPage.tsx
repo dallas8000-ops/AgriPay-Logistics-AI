@@ -98,7 +98,7 @@ export default function DeliveriesPage() {
                 style={{ marginTop: '0.5rem' }}
                 onClick={() => aiApi.routeSummary({ pickup: d.pickup_location, dropoff: d.dropoff_location }).then(load)}
               >
-                Get AI Route Summary
+                Get route estimate
               </button>
             )}
           </div>

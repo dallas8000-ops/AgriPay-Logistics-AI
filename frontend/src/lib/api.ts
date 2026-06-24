@@ -151,6 +151,8 @@ export interface PersonalPaymentInstructions {
   amount: string;
   currency: string;
   payment_reference: string;
+  status?: string;
+  message?: string;
   description?: string;
   customer_name?: string;
   invoice_id?: number;
@@ -239,6 +241,15 @@ export async function api<T>(
   return res.json();
 }
 
+export async function publicApi<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || err.message || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 export const capabilitiesApi = {
   get: () => api<Capabilities>('/system/capabilities/'),
 };
@@ -318,6 +329,10 @@ export const invoiceApi = {
       body: JSON.stringify({ redirect_url: redirect_url || window.location.origin + `/invoices/${id}/paid` }),
     }),
   summary: () => api<{ pending_count: number; pending_amount: string; currency: string }>('/payments/invoices/summary/'),
+  publicInstructions: (paymentReference: string) =>
+    publicApi<PersonalPaymentInstructions & { status?: string; message?: string }>(
+      `/payments/invoices/public/${encodeURIComponent(paymentReference)}/`,
+    ),
 };
 
 export const ledgerApi = {
@@ -340,6 +355,20 @@ export const ledgerApi = {
       method: 'POST',
       body: JSON.stringify({ invoice_id }),
     }),
+  exportCsv: async () => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/payments/ledger/export-csv/`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'agripay-ledger.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 };
 
 export const aiApi = {

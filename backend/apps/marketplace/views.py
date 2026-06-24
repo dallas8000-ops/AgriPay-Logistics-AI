@@ -3,6 +3,10 @@ from rest_framework import generics, permissions, viewsets
 
 from apps.accounts.models import User
 
+from decimal import Decimal
+
+from apps.ai_services.pricing import estimate_price
+
 from .models import Order, ProduceListing
 from .serializers import OrderSerializer, ProduceListingSerializer
 
@@ -24,7 +28,16 @@ class ProduceListingViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user, country=self.request.user.country)
+        user = self.request.user
+        data = serializer.validated_data
+        crop = data.get("crop", "")
+        qty = float(data.get("quantity_kg", 100))
+        season = data.get("season") or "long_rains"
+        ai_price = None
+        if crop:
+            est = estimate_price(crop, user.country, qty, season)
+            ai_price = Decimal(str(est["unit_price"]))
+        serializer.save(seller=user, country=user.country, ai_suggested_price=ai_price)
 
 
 class OrderViewSet(viewsets.ModelViewSet):

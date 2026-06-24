@@ -1,7 +1,9 @@
 from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.models import User
 from apps.payments.aggregator.flutterwave import FlutterwaveClient, FlutterwaveError
@@ -134,3 +136,37 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 "currency": request.user.currency,
             }
         )
+
+
+class PublicInvoiceView(APIView):
+    """Public pay page — no login required for pending INV- payment instructions."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, payment_reference: str):
+        try:
+            invoice = Invoice.objects.select_related("seller").get(
+                payment_reference__iexact=payment_reference.strip(),
+            )
+        except Invoice.DoesNotExist:
+            return Response(
+                {"detail": "Payment request not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if invoice.status != Invoice.Status.PENDING:
+            return Response(
+                {
+                    "payment_reference": invoice.payment_reference,
+                    "status": invoice.status,
+                    "amount": str(invoice.amount),
+                    "currency": invoice.currency,
+                    "seller_name": invoice.seller.get_full_name() or invoice.seller.username,
+                    "message": "This payment request is no longer pending.",
+                    "instructions": [],
+                }
+            )
+
+        payload = build_personal_payment_instructions_for_invoice(invoice)
+        payload["status"] = invoice.status
+        return Response(payload)

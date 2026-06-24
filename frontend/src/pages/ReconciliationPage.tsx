@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
-import { formatCurrency, ledgerApi, type LedgerEntry, type ReconciliationSummary } from '../lib/api';
-import { smsPasteExample } from '../lib/locale';
+import { formatCurrency, invoiceApi, ledgerApi, type LedgerEntry, type ReconciliationSummary } from '../lib/api';
+import { smsDemoForInvoice, smsPasteExample } from '../lib/locale';
 import { useAuth } from '../context/AuthContext';
 
 export default function ReconciliationPage() {
@@ -13,13 +13,39 @@ export default function ReconciliationPage() {
   const [parsedPreview, setParsedPreview] = useState<Record<string, unknown> | null>(null);
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [demoInvoiceRef, setDemoInvoiceRef] = useState<string | null>(null);
 
   const load = () => {
     ledgerApi.summary().then(setSummary).catch(() => {});
     ledgerApi.list().then(setEntries).catch(() => {});
+    invoiceApi.list().then((invoices) => {
+      const pending = invoices.find((i) => i.status === 'pending');
+      if (pending) setDemoInvoiceRef(pending.payment_reference);
+    }).catch(() => {});
   };
 
   useEffect(() => { load(); }, []);
+
+  const fillDemoSms = () => {
+    invoiceApi.list().then((invoices) => {
+      const pending = invoices.find((i) => i.status === 'pending');
+      if (!pending) {
+        setMsg('Create a pending payment request first (Invoices → New).');
+        return;
+      }
+      setSmsText(smsDemoForInvoice(pending.payment_reference, pending.amount, pending.currency, user?.country));
+      setParsedPreview(null);
+      setMsg(`Demo SMS loaded for ${pending.payment_reference} — click Record payment.`);
+    }).catch(() => setMsg('Could not load invoices.'));
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      await ledgerApi.exportCsv();
+    } catch {
+      setMsg('CSV export failed.');
+    }
+  };
 
   const handleParse = async () => {
     if (!smsText.trim()) return;
@@ -77,6 +103,11 @@ export default function ReconciliationPage() {
       <PageHeader
         title="Reconcile Payments"
         subtitle="Paste confirmation SMS to match payments — you verify your own inbox; we do not read your phone automatically."
+        action={
+          <button type="button" className="btn btn-secondary btn-sm" onClick={handleExportCsv}>
+            Export CSV
+          </button>
+        }
       />
 
       {summary && (
@@ -110,6 +141,11 @@ export default function ReconciliationPage() {
           style={{ width: '100%', marginBottom: '0.75rem' }}
         />
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {demoInvoiceRef && (
+            <button type="button" className="btn btn-secondary" onClick={fillDemoSms} disabled={loading}>
+              Load demo SMS
+            </button>
+          )}
           <button type="button" className="btn btn-secondary" onClick={handleParse} disabled={loading}>
             Preview parse
           </button>

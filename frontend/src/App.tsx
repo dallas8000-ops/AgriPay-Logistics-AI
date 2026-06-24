@@ -18,6 +18,7 @@ import AdminPage from './pages/AdminPage';
 import PaymentPage from './pages/PaymentPage';
 import InvoicesPage from './pages/InvoicesPage';
 import InvoicePayPage from './pages/InvoicePayPage';
+import PublicPayPage from './pages/PublicPayPage';
 import ReconciliationPage from './pages/ReconciliationPage';
 import './auth.css';
 
@@ -39,6 +40,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/pay/:ref" element={<PublicPayPage />} />
       <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
       <Route path="/onboarding" element={<PrivateRoute><OnboardingPage /></PrivateRoute>} />
       <Route path="/marketplace" element={<PrivateRoute><AgriOnlyRoute><MarketplacePage /></AgriOnlyRoute></PrivateRoute>} />

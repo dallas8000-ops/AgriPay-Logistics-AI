@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, invoiceApi, type Invoice } from '../lib/api';
+import { publicPayUrl } from '../lib/locale';
 import { phonePlaceholder } from '../lib/locale';
 
 export default function InvoicesPage() {
@@ -18,6 +19,14 @@ export default function InvoicesPage() {
   });
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
+
+  const copyPayLink = async (inv: Invoice) => {
+    const url = publicPayUrl(inv.payment_reference);
+    await navigator.clipboard.writeText(url);
+    setCopiedRef(inv.payment_reference);
+    setTimeout(() => setCopiedRef(null), 2000);
+  };
 
   const load = () => {
     invoiceApi.list().then(setInvoices).catch(() => {});
@@ -105,7 +114,12 @@ export default function InvoicesPage() {
               </p>
               {inv.status === 'pending' && (
                 <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <Link to={`/invoices/${inv.id}/pay`} className="btn btn-primary btn-sm">Share payment link</Link>
+                  <a href={publicPayUrl(inv.payment_reference)} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+                    Open pay link
+                  </a>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => copyPayLink(inv)}>
+                    {copiedRef === inv.payment_reference ? 'Copied!' : 'Copy link'}
+                  </button>
                   <Link to="/reconcile" className="btn btn-secondary btn-sm">Reconcile SMS</Link>
                 </div>
               )}

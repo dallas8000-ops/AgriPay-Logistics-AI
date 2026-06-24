@@ -34,3 +34,31 @@ export function demoCountryLabel(country?: string | null): string {
   const c = COUNTRIES[code];
   return `${c.flag} ${c.name} (${c.currency})`;
 }
+
+/** Demo SMS that matches a real pending invoice (amount + INV ref) for one-click reconcile. */
+export function smsDemoForInvoice(
+  paymentReference: string,
+  amount: string | number,
+  currency?: string | null,
+  country?: string | null,
+): string {
+  const code = (country && country in COUNTRIES ? country : 'KE') as CountryCode;
+  const cur = currency || COUNTRIES[code].currency;
+  const dialDigits = countryDial(country).slice(1);
+  const amt = typeof amount === 'number' ? amount.toLocaleString('en-KE') : amount;
+  if (code === 'KE') {
+    return (
+      `Confirmed. Ksh${amt}.00 received from 254712000111 on ${new Date().toLocaleDateString('en-GB')}. ` +
+      `New M-Pesa balance is Ksh12,500.00. Transaction cost, Ksh0.00. ` +
+      `Ref ${paymentReference}`
+    );
+  }
+  return (
+    `MTN Mobile Money: You have received ${cur} ${amt} from ${dialDigits}712000111. ` +
+    `Transaction ID: 1234567890. Ref ${paymentReference}`
+  );
+}
+
+export function publicPayUrl(paymentReference: string): string {
+  return `${window.location.origin}/pay/${encodeURIComponent(paymentReference)}`;
+}

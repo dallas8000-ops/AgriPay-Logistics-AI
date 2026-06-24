@@ -1,4 +1,7 @@
+import csv
 from decimal import Decimal
+
+from django.http import HttpResponse
 
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -122,6 +125,49 @@ class PaymentLedgerViewSet(viewsets.ModelViewSet):
         if user.role == User.Role.ADMIN and request.query_params.get("user_id"):
             user = User.objects.get(pk=request.query_params["user_id"])
         return Response(reconciliation_summary(user))
+
+    @action(detail=False, methods=["get"], url_path="export-csv")
+    def export_csv(self, request):
+        if request.user.role not in (User.Role.FARMER, User.Role.VENDOR, User.Role.ADMIN):
+            return Response({"detail": "Seller account required."}, status=403)
+        qs = self.get_queryset().select_related("invoice", "order").order_by("-created_at")
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="agripay-ledger.csv"'
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "created_at",
+                "amount",
+                "currency",
+                "provider",
+                "status",
+                "source",
+                "order_reference",
+                "invoice_reference",
+                "payer_phone",
+                "txn_reference",
+                "raw_sms",
+            ]
+        )
+        for entry in qs:
+            order_ref = f"AGR-{entry.order_id}" if entry.order_id else ""
+            inv_ref = entry.invoice.payment_reference if entry.invoice_id else ""
+            writer.writerow(
+                [
+                    entry.created_at.isoformat(),
+                    entry.amount or "",
+                    entry.currency,
+                    entry.provider,
+                    entry.status,
+                    entry.source,
+                    order_ref,
+                    inv_ref,
+                    entry.payer_phone,
+                    entry.txn_reference,
+                    entry.raw_sms.replace("\n", " ").strip(),
+                ]
+            )
+        return response
 
     @action(detail=True, methods=["post"])
     def match(self, request, pk=None):

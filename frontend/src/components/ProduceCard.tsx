@@ -36,7 +36,7 @@ export default function ProduceCard({ listing, action, compact }: ProduceCardPro
             <p className="produce-card-price">{formatCurrency(listing.unit_price, listing.currency)}/kg</p>
             {listing.ai_suggested_price && (
               <p className="produce-card-ai">
-                AI: {formatCurrency(listing.ai_suggested_price, listing.currency)}/kg
+                Guide: {formatCurrency(listing.ai_suggested_price, listing.currency)}/kg
               </p>
             )}
           </div>

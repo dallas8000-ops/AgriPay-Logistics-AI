@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .invoice_views import InvoiceViewSet
+from .invoice_views import InvoiceViewSet, PublicInvoiceView
 from .ledger_views import PaymentLedgerViewSet, PersonalCollectionViewSet
 from .views import (
     PaymentViewSet,
@@ -18,6 +18,7 @@ router.register("collect", PersonalCollectionViewSet, basename="personal-collect
 router.register("", PaymentViewSet, basename="payment")
 
 urlpatterns = [
+    path("invoices/public/<str:payment_reference>/", PublicInvoiceView.as_view(), name="public-invoice"),
     path("webhook/stripe/", stripe_webhook, name="stripe_webhook"),
     path("webhook/flutterwave/", flutterwave_webhook, name="flutterwave_webhook"),
     path("webhook/mtn/", mtn_momo_webhook, name="mtn_momo_webhook"),

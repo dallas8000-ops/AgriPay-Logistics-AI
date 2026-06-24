@@ -110,7 +110,7 @@ def route_summary(pickup: str, dropoff: str, distance_km: float = None) -> dict:
         "estimated_hours": round(eta_hours, 1),
         "summary": (
             f"Route from {pickup} to {dropoff}: ~{dist:.0f}km, "
-            f"ETA {eta_hours:.1f}h via primary highway (AI estimate)."
+            f"ETA {eta_hours:.1f}h via primary highway (estimated)."
         ),
         "conditions": "Dry season — moderate traffic expected near markets.",
     }

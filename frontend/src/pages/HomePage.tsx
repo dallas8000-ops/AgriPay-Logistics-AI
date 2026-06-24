@@ -28,7 +28,7 @@ const QUICK_ACTIONS: Record<string, Array<{ to: string; icon: typeof ShoppingBag
     { to: '/marketplace', icon: ShoppingBag, label: 'Browse Market', desc: 'Fresh produce near you' },
     { to: '/orders', icon: CreditCard, label: 'My Orders', desc: 'Pay & track purchases' },
     { to: '/disputes', icon: AlertCircle, label: 'Disputes', desc: 'Resolve issues' },
-    { to: '/ai-pricing', icon: Sparkles, label: 'AI Insights', desc: 'Price intelligence' },
+    { to: '/ai-pricing', icon: Sparkles, label: 'Price guide', desc: 'Rule-based crop estimates' },
   ],
   driver: [
     { to: '/deliveries', icon: Truck, label: 'Delivery Jobs', desc: 'Accept & complete runs' },
@@ -110,7 +110,7 @@ export default function HomePage() {
         <section className="card insight-card">
           <div className="insight-card-header">
             <Sparkles size={18} />
-            <strong>Buyer Reliability Score</strong>
+            <strong>Buyer reliability score</strong>
             <span className="badge badge-tier">{buyerScore.tier}</span>
           </div>
           <div className="insight-score-row">

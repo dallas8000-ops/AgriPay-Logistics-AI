@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  aiApi, formatCurrency, marketplaceApi, queueOfflineAction, type ProduceListing,
+  aiApi, formatCurrency, marketplaceApi, queueOfflineAction, type PriceEstimate, type ProduceListing,
 } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import ProduceCard from '../components/ProduceCard';
@@ -18,6 +18,7 @@ export default function MarketplacePage() {
   const [filter, setFilter] = useState('');
   const [category, setCategory] = useState('All');
   const [msg, setMsg] = useState('');
+  const [priceHint, setPriceHint] = useState<PriceEstimate | null>(null);
 
   const load = () => {
     const params = new URLSearchParams();
@@ -28,6 +29,16 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => { load(); }, [filter, category]);
+
+  useEffect(() => {
+    if (!showForm || !form.crop || !form.quantity_kg) {
+      setPriceHint(null);
+      return;
+    }
+    const qty = parseFloat(form.quantity_kg);
+    if (!qty || qty <= 0) return;
+    aiApi.priceEstimate({ crop: form.crop, quantity_kg: qty, country: user?.country }).then(setPriceHint).catch(() => setPriceHint(null));
+  }, [showForm, form.crop, form.quantity_kg, user?.country]);
 
   const canSell = user?.role === 'farmer' || user?.role === 'vendor';
 
@@ -44,11 +55,11 @@ export default function MarketplacePage() {
         queueOfflineAction({ url: '/marketplace/listings/', method: 'POST', body: data });
         setMsg('Saved offline — will sync when connected');
       } else {
-        await marketplaceApi.createListing(data);
-        const estimate = await aiApi.priceEstimate({
-          crop: form.crop, quantity_kg: parseFloat(form.quantity_kg), country: user?.country,
-        });
-        setMsg(`Listed! AI suggests ${formatCurrency(estimate.unit_price, estimate.currency)}/kg`);
+        const listing = await marketplaceApi.createListing(data);
+        const guide = listing.ai_suggested_price
+          ? formatCurrency(listing.ai_suggested_price, listing.currency)
+          : null;
+        setMsg(guide ? `Listed! Price guide: ${guide}/kg` : 'Listing published.');
       }
       setShowForm(false);
       load();
@@ -123,10 +134,24 @@ export default function MarketplacePage() {
               <input type="number" value={form.quantity_kg} onChange={(e) => setForm({ ...form, quantity_kg: e.target.value })} required />
             </div>
             <div className="form-group">
-              <label>Price/kg</label>
+              <label>Price/kg ({user?.currency})</label>
               <input type="number" value={form.unit_price} onChange={(e) => setForm({ ...form, unit_price: e.target.value })} required />
             </div>
           </div>
+          {priceHint && (
+            <div style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                Price guide: {formatCurrency(priceHint.unit_price, priceHint.currency)}/kg
+              </span>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setForm((f) => ({ ...f, unit_price: String(priceHint.unit_price) }))}
+              >
+                Use suggestion
+              </button>
+            </div>
+          )}
           <div className="form-group">
             <label>Location</label>
             <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} required placeholder="District, region" />

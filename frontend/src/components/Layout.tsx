@@ -16,7 +16,7 @@ const roleNav: Record<string, Array<{ to: string; icon: typeof Home; label: stri
     { to: '/invoices', icon: FileText, label: 'Invoices' },
     { to: '/reconcile', icon: BookOpen, label: 'Reconcile' },
     { to: '/marketplace', icon: ShoppingBag, label: 'Sell' },
-    { to: '/ai-pricing', icon: Leaf, label: 'AI Price' },
+    { to: '/ai-pricing', icon: Leaf, label: 'Price guide' },
     { to: '/deliveries', icon: Truck, label: 'Deliveries' },
   ],
   vendor: [
