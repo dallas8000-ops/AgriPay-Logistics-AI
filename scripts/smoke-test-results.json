@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-06-24T04:13:21.606631+00:00",
+  "ran_at": "2026-06-24T04:20:52.605569+00:00",
   "api": "http://127.0.0.1:8000",
   "frontend": "http://127.0.0.1:5174",
   "pass": true,
@@ -67,7 +67,7 @@
       "phase": "invoices",
       "test": "create",
       "status": "PASS",
-      "detail": "ref=INV-11"
+      "detail": "ref=INV-14"
     },
     {
       "phase": "invoices",
@@ -85,7 +85,7 @@
       "phase": "invoices",
       "test": "csv_export",
       "status": "PASS",
-      "detail": "1174 bytes"
+      "detail": "1387 bytes"
     },
     {
       "phase": "marketplace",
@@ -97,7 +97,7 @@
       "phase": "marketplace",
       "test": "orders",
       "status": "PASS",
-      "detail": "count=12"
+      "detail": "count=13"
     },
     {
       "phase": "unit",
