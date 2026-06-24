@@ -26,3 +26,4 @@ media/
 .env
 .env.*
 !.env.example
+scripts/burn-test-results.json

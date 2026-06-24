@@ -425,20 +425,23 @@ def print_summary(caps: dict | None = None):
 
     fw = (caps or {}).get("collection", {}).get("flutterwave", {}).get("status")
     merchant = (caps or {}).get("collection", {}).get("merchant_api", {}).get("status")
+    mtn = (caps or {}).get("collection", {}).get("merchant_api", {}).get("providers", {}).get("mtn_momo")
     print("\n--- CAN YOU SHOW A CLIENT A REAL MONEY COLLECTION? ---")
-    if fw == "operational" or merchant == "operational":
-        print("  YES (partial) — at least one provider key is configured. Complete a manual checkout to confirm E2E.")
+    if fw == "operational":
+        print("  YES — Flutterwave aggregator checkout is configured.")
+    elif merchant == "operational" or mtn == "operational":
+        print("  YES — direct merchant API (e.g. MTN MoMo sandbox) is live. Run scripts/e2e-mtn-momo.py to confirm.")
     else:
-        print("  NO — no Flutterwave or merchant API keys on this deployment.")
-        print("  YES (personal only) - you CAN demo: create invoice -> share pay instructions -> paste SMS -> reconcile.")
-        print("  That is honest for small traders; it is NOT a live aggregator checkout.")
+        print("  YES (personal only) — create invoice -> share pay instructions -> paste SMS -> reconcile.")
+        print("  That is honest for small traders; it is NOT a live merchant API checkout.")
 
     print("\n--- NEXT ACTION ---")
-    if fw != "operational":
-        print("  1. Add FLUTTERWAVE_SECRET_KEY (test) to backend/.env and re-run this script.")
-    if merchant != "operational":
-        print("  2. Or add MTN_MOMO_* sandbox creds for direct merchant API path.")
-    print("  3. Until then: sell personal-transfer + SMS reconcile only.")
+    if merchant == "operational" or mtn == "operational":
+        print("  Build complete for payments without Flutterwave. Aggregator keys are optional.")
+    elif fw != "operational":
+        print("  Optional: add FLUTTERWAVE_SECRET_KEY (test) for aggregator checkout.")
+        print("  Or: add MTN_MOMO_* sandbox creds (scripts/configure-payment-keys.ps1).")
+        print("  Until then: personal-transfer + SMS reconcile only.")
     print("=" * 72)
 
     out = os.path.join(os.path.dirname(__file__), "burn-test-results.json")
