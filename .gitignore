@@ -27,3 +27,4 @@ media/
 .env.*
 !.env.example
 scripts/burn-test-results.json
+scripts/golive-evidence/
