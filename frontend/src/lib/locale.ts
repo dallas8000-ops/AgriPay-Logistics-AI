@@ -9,7 +9,7 @@ const DIAL: Record<CountryCode, string> = {
 
 export function countryDial(country?: string | null): string {
   if (country && country in DIAL) return DIAL[country as CountryCode];
-  return DIAL.KE;
+  return DIAL.UG;
 }
 
 export function phonePlaceholder(country?: string | null): string {
@@ -18,10 +18,10 @@ export function phonePlaceholder(country?: string | null): string {
 
 /** Example SMS paste text matching the signed-in user's currency and country code. */
 export function smsPasteExample(currency?: string | null, country?: string | null): string {
-  const code = (country && country in COUNTRIES ? country : 'KE') as CountryCode;
+  const code = (country && country in COUNTRIES ? country : 'UG') as CountryCode;
   const cur = currency || COUNTRIES[code].currency;
   const dialDigits = countryDial(country).slice(1);
-  const amount = cur === 'KES' ? '5,000' : cur === 'UGX' ? '50,000' : cur === 'TZS' ? '120,000' : '45,000';
+  const amount = cur === 'UGX' ? '50,000' : cur === 'KES' ? '5,000' : cur === 'TZS' ? '120,000' : '45,000';
   const provider = code === 'KE' ? 'M-Pesa' : 'MTN Mobile Money';
   return (
     `${provider}: You have received ${cur} ${amount} from ${dialDigits}712345678. ` +
@@ -30,7 +30,7 @@ export function smsPasteExample(currency?: string | null, country?: string | nul
 }
 
 export function demoCountryLabel(country?: string | null): string {
-  const code = (country && country in COUNTRIES ? country : 'KE') as CountryCode;
+  const code = (country && country in COUNTRIES ? country : 'UG') as CountryCode;
   const c = COUNTRIES[code];
   return `${c.flag} ${c.name} (${c.currency})`;
 }
@@ -42,10 +42,10 @@ export function smsDemoForInvoice(
   currency?: string | null,
   country?: string | null,
 ): string {
-  const code = (country && country in COUNTRIES ? country : 'KE') as CountryCode;
+  const code = (country && country in COUNTRIES ? country : 'UG') as CountryCode;
   const cur = currency || COUNTRIES[code].currency;
   const dialDigits = countryDial(country).slice(1);
-  const amt = typeof amount === 'number' ? amount.toLocaleString('en-KE') : amount;
+  const amt = typeof amount === 'number' ? amount.toLocaleString('en-UG') : amount;
   if (code === 'KE') {
     return (
       `Confirmed. Ksh${amt}.00 received from 254712000111 on ${new Date().toLocaleDateString('en-GB')}. ` +

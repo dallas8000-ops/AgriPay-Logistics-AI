@@ -91,6 +91,7 @@ export interface Dispute {
 
 export interface PriceEstimate {
   crop: string;
+  country?: string;
   unit_price: number;
   total_estimate: number;
   currency: string;
@@ -99,6 +100,21 @@ export interface PriceEstimate {
   summary: string;
   method?: string;
   method_note?: string;
+  market?: {
+    name: string;
+    observed_date?: string;
+    day_change_pct?: number;
+    month_change_pct?: number;
+    source?: string;
+    snapshot_updated_at?: string;
+  };
+  fx?: {
+    rate: number;
+    base: string;
+    quote: string;
+    updated_at?: string;
+    live?: boolean;
+  };
 }
 
 export interface Capabilities {

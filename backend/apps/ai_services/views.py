@@ -6,6 +6,7 @@ from apps.accounts.models import BuyerProfile
 from apps.logistics.models import Delivery
 
 from .pricing import buyer_reliability_score, estimate_price, route_summary
+from .market_data import market_overview
 
 
 class PriceEstimateView(APIView):
@@ -18,12 +19,14 @@ class PriceEstimateView(APIView):
         season = request.data.get("season", "long_rains")
         if not crop:
             return Response({"detail": "crop is required"}, status=400)
-        result = estimate_price(crop, country, float(quantity), season)
-        result["method"] = "rule_based"
-        result["method_note"] = (
-            "Static crop price tables with season multipliers — not live market feeds or ML."
-        )
-        return Response(result)
+        return Response(estimate_price(crop, country, float(quantity), season))
+
+
+class MarketOverviewView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        return Response(market_overview())
 
 
 class BuyerScoreView(APIView):

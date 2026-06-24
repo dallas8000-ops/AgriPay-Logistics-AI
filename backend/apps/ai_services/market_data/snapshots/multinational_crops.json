@@ -1,0 +1,275 @@
+{
+  "source": "RATIN-aligned multinational snapshot",
+  "attribution": "Wholesale benchmarks modeled on EAC RATIN retail/wholesale reports (Uganda, Kenya, Tanzania, Rwanda). Refresh via manage.py refresh_market_data.",
+  "updated_at": "2026-06-23",
+  "countries": {
+    "UG": {
+      "default_market": "Kampala wholesale",
+      "crops": {
+        "maize": {
+          "wholesale_per_kg": 1239,
+          "currency": "UGX",
+          "market": "Biira millers market",
+          "observed": "2026-02-25",
+          "day_change_pct": 2.94,
+          "month_change_pct": -2.78
+        },
+        "beans": {
+          "wholesale_per_kg": 3500,
+          "currency": "UGX",
+          "market": "Biira millers market",
+          "observed": "2026-02-25",
+          "day_change_pct": 0,
+          "month_change_pct": -2.31
+        },
+        "coffee": {
+          "wholesale_per_kg": 8500,
+          "currency": "UGX",
+          "market": "Kapchorwa traders",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.5,
+          "month_change_pct": 1.2
+        },
+        "bananas": {
+          "wholesale_per_kg": 1200,
+          "currency": "UGX",
+          "market": "Owino market",
+          "observed": "2026-06-01",
+          "day_change_pct": -1.0,
+          "month_change_pct": 3.5
+        },
+        "tomatoes": {
+          "wholesale_per_kg": 2800,
+          "currency": "UGX",
+          "market": "Nakasero market",
+          "observed": "2026-06-01",
+          "day_change_pct": 4.2,
+          "month_change_pct": -8.0
+        },
+        "rice": {
+          "wholesale_per_kg": 4200,
+          "currency": "UGX",
+          "market": "Kampala wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.3,
+          "month_change_pct": 0.8
+        },
+        "sorghum": {
+          "wholesale_per_kg": 1558,
+          "currency": "UGX",
+          "market": "Biira millers market",
+          "observed": "2026-02-25",
+          "day_change_pct": 12.82,
+          "month_change_pct": -10.2
+        },
+        "cassava": {
+          "wholesale_per_kg": 800,
+          "currency": "UGX",
+          "market": "Masaka market",
+          "observed": "2026-06-01",
+          "day_change_pct": 0,
+          "month_change_pct": 1.5
+        },
+        "onions": {
+          "wholesale_per_kg": 3200,
+          "currency": "UGX",
+          "market": "Owino market",
+          "observed": "2026-06-01",
+          "day_change_pct": 2.1,
+          "month_change_pct": -5.0
+        }
+      }
+    },
+    "KE": {
+      "default_market": "Nairobi wholesale",
+      "crops": {
+        "maize": {
+          "wholesale_per_kg": 48,
+          "currency": "KES",
+          "market": "Nairobi cereals market",
+          "observed": "2026-06-01",
+          "day_change_pct": 1.5,
+          "month_change_pct": -3.0
+        },
+        "beans": {
+          "wholesale_per_kg": 165,
+          "currency": "KES",
+          "market": "Eldoret wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.8,
+          "month_change_pct": 2.5
+        },
+        "coffee": {
+          "wholesale_per_kg": 520,
+          "currency": "KES",
+          "market": "Nyeri auction",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.2,
+          "month_change_pct": 4.0
+        },
+        "tea": {
+          "wholesale_per_kg": 380,
+          "currency": "KES",
+          "market": "Kericho collection",
+          "observed": "2026-06-01",
+          "day_change_pct": 0,
+          "month_change_pct": 1.0
+        },
+        "bananas": {
+          "wholesale_per_kg": 35,
+          "currency": "KES",
+          "market": "Kisii market",
+          "observed": "2026-06-01",
+          "day_change_pct": -0.5,
+          "month_change_pct": 2.0
+        },
+        "tomatoes": {
+          "wholesale_per_kg": 95,
+          "currency": "KES",
+          "market": "Wakulima market",
+          "observed": "2026-06-01",
+          "day_change_pct": 5.5,
+          "month_change_pct": -12.0
+        },
+        "potatoes": {
+          "wholesale_per_kg": 55,
+          "currency": "KES",
+          "market": "Nakuru wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 1.2,
+          "month_change_pct": -4.0
+        },
+        "rice": {
+          "wholesale_per_kg": 145,
+          "currency": "KES",
+          "market": "Mwea traders",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.4,
+          "month_change_pct": 0.6
+        },
+        "onions": {
+          "wholesale_per_kg": 88,
+          "currency": "KES",
+          "market": "Wakulima market",
+          "observed": "2026-06-01",
+          "day_change_pct": 3.0,
+          "month_change_pct": -6.5
+        }
+      }
+    },
+    "TZ": {
+      "default_market": "Dar es Salaam wholesale",
+      "crops": {
+        "maize": {
+          "wholesale_per_kg": 1050,
+          "currency": "TZS",
+          "market": "Ubungo market",
+          "observed": "2026-06-01",
+          "day_change_pct": 1.0,
+          "month_change_pct": -2.5
+        },
+        "beans": {
+          "wholesale_per_kg": 2800,
+          "currency": "TZS",
+          "market": "Arusha wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.6,
+          "month_change_pct": 1.8
+        },
+        "coffee": {
+          "wholesale_per_kg": 6200,
+          "currency": "TZS",
+          "market": "Mbeya traders",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.3,
+          "month_change_pct": 2.0
+        },
+        "bananas": {
+          "wholesale_per_kg": 900,
+          "currency": "TZS",
+          "market": "Kariakoo market",
+          "observed": "2026-06-01",
+          "day_change_pct": -0.8,
+          "month_change_pct": 2.5
+        },
+        "tomatoes": {
+          "wholesale_per_kg": 2200,
+          "currency": "TZS",
+          "market": "Arusha market",
+          "observed": "2026-06-01",
+          "day_change_pct": 3.8,
+          "month_change_pct": -7.0
+        },
+        "rice": {
+          "wholesale_per_kg": 3100,
+          "currency": "TZS",
+          "market": "Morogoro wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.2,
+          "month_change_pct": 0.5
+        },
+        "cassava": {
+          "wholesale_per_kg": 650,
+          "currency": "TZS",
+          "market": "Mwanza market",
+          "observed": "2026-06-01",
+          "day_change_pct": 0,
+          "month_change_pct": 1.0
+        }
+      }
+    },
+    "RW": {
+      "default_market": "Kigali wholesale",
+      "crops": {
+        "maize": {
+          "wholesale_per_kg": 720,
+          "currency": "RWF",
+          "market": "Kimisagara market",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.9,
+          "month_change_pct": -1.5
+        },
+        "beans": {
+          "wholesale_per_kg": 1350,
+          "currency": "RWF",
+          "market": "Kigali wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.5,
+          "month_change_pct": 2.2
+        },
+        "bananas": {
+          "wholesale_per_kg": 420,
+          "currency": "RWF",
+          "market": "Musanze market",
+          "observed": "2026-06-01",
+          "day_change_pct": -0.3,
+          "month_change_pct": 1.5
+        },
+        "tomatoes": {
+          "wholesale_per_kg": 1100,
+          "currency": "RWF",
+          "market": "Nyabugogo market",
+          "observed": "2026-06-01",
+          "day_change_pct": 4.0,
+          "month_change_pct": -9.0
+        },
+        "potatoes": {
+          "wholesale_per_kg": 580,
+          "currency": "RWF",
+          "market": "Musanze wholesale",
+          "observed": "2026-06-01",
+          "day_change_pct": 1.0,
+          "month_change_pct": -3.5
+        },
+        "rice": {
+          "wholesale_per_kg": 1650,
+          "currency": "RWF",
+          "market": "Kigali traders",
+          "observed": "2026-06-01",
+          "day_change_pct": 0.1,
+          "month_change_pct": 0.4
+        }
+      }
+    }
+  }
+}

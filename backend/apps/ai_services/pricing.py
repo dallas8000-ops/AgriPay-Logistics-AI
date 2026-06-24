@@ -2,8 +2,11 @@ from decimal import Decimal
 
 from django.conf import settings
 
+from .market_data.crops import get_crop_quote
+from .market_data.fx import get_fx_for_country
 
-# Base prices per kg in USD equivalent, adjusted per country
+
+# USD/kg fallback when no local wholesale quote exists for a country/crop pair.
 CROP_BASE_PRICES = {
     "maize": Decimal("0.25"),
     "beans": Decimal("0.85"),
@@ -35,22 +38,54 @@ COUNTRY_FX = {
 
 def estimate_price(crop: str, country: str, quantity_kg: float, season: str) -> dict:
     crop_key = crop.lower().strip()
-    base_usd = CROP_BASE_PRICES.get(crop_key, Decimal("0.50"))
     season_mult = SEASON_MULTIPLIERS.get(season, Decimal("1.0"))
-    fx = COUNTRY_FX.get(country, Decimal("130"))
     qty = Decimal(str(quantity_kg))
+    currency = settings.SUPPORTED_COUNTRIES.get(country, {}).get("currency", "UGX")
+    fx_info = get_fx_for_country(country)
+    quote = get_crop_quote(crop_key, country)
 
-    unit_price = base_usd * season_mult * fx
     bulk_discount = Decimal("0.98") if qty >= 500 else Decimal("1.0")
     if qty >= 2000:
         bulk_discount = Decimal("0.95")
 
+    market_block = None
+    if quote:
+        unit_price = quote["unit_price_local"] * season_mult
+        method = "live_market"
+        method_note = (
+            f"Wholesale benchmark from {quote['market']} "
+            f"(observed {quote['observed_date'] or 'n/a'}). "
+            f"FX {fx_info['base']}/{fx_info['quote']} at {fx_info['rate']:.2f} "
+            f"({'live' if fx_info['live'] else 'cached fallback'})."
+        )
+        market_block = {
+            "name": quote["market"],
+            "observed_date": quote["observed_date"],
+            "day_change_pct": quote["day_change_pct"],
+            "month_change_pct": quote["month_change_pct"],
+            "source": quote["source"],
+            "snapshot_updated_at": quote["snapshot_updated_at"],
+        }
+        confidence = Decimal("0.88")
+    else:
+        base_usd = CROP_BASE_PRICES.get(crop_key, Decimal("0.50"))
+        fx_rate = Decimal(str(fx_info["rate"]))
+        unit_price = base_usd * season_mult * fx_rate
+        method = "fx_adjusted"
+        method_note = (
+            f"No wholesale quote for {crop_key} in {country} — USD baseline × live FX "
+            f"({fx_info['rate']:.2f} {fx_info['quote']}). Verify locally before listing."
+        )
+        confidence = Decimal("0.72") if crop_key in CROP_BASE_PRICES else Decimal("0.58")
+
     final_unit = (unit_price * bulk_discount).quantize(Decimal("0.01"))
     total = (final_unit * qty).quantize(Decimal("0.01"))
-    currency = settings.SUPPORTED_COUNTRIES.get(country, {}).get("currency", "KES")
-
     risk_score = _compute_risk(crop_key, season, qty)
-    confidence = Decimal("0.82") if crop_key in CROP_BASE_PRICES else Decimal("0.65")
+
+    trend = ""
+    if market_block and market_block.get("day_change_pct") is not None:
+        pct = market_block["day_change_pct"]
+        trend = f" Market moved {pct:+.1f}% day-on-day."
 
     return {
         "crop": crop,
@@ -62,6 +97,16 @@ def estimate_price(crop: str, country: str, quantity_kg: float, season: str) -> 
         "currency": currency,
         "confidence": float(confidence),
         "risk_score": risk_score,
+        "method": method,
+        "method_note": method_note,
+        "market": market_block,
+        "fx": {
+            "rate": fx_info["rate"],
+            "base": fx_info["base"],
+            "quote": fx_info["quote"],
+            "updated_at": fx_info.get("updated_at"),
+            "live": fx_info.get("live", False),
+        },
         "factors": {
             "season_adjustment": float(season_mult),
             "bulk_discount": float(bulk_discount),
@@ -69,7 +114,7 @@ def estimate_price(crop: str, country: str, quantity_kg: float, season: str) -> 
         },
         "summary": (
             f"Estimated {crop} at {final_unit} {currency}/kg for {qty}kg in {season.replace('_', ' ')} season. "
-            f"Risk level: {risk_score['level']}."
+            f"Risk level: {risk_score['level']}.{trend}"
         ),
     }
 

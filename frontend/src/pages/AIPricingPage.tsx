@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { aiApi, formatCurrency, type PriceEstimate } from '../lib/api';
+import { aiApi, COUNTRIES, formatCurrency, type CountryCode, type PriceEstimate } from '../lib/api';
 
 const CROPS = ['maize', 'beans', 'coffee', 'tea', 'bananas', 'tomatoes', 'potatoes', 'avocado', 'rice', 'onions'];
 const SEASONS = [
@@ -12,6 +12,7 @@ const SEASONS = [
 export default function AIPricingPage() {
   const { user } = useAuth();
   const [crop, setCrop] = useState('maize');
+  const [country, setCountry] = useState<CountryCode>((user?.country as CountryCode) || 'UG');
   const [quantity, setQuantity] = useState('500');
   const [season, setSeason] = useState('long_rains');
   const [result, setResult] = useState<PriceEstimate | null>(null);
@@ -23,7 +24,7 @@ export default function AIPricingPage() {
       const r = await aiApi.priceEstimate({
         crop,
         quantity_kg: parseFloat(quantity),
-        country: user?.country,
+        country,
         season,
       });
       setResult(r);
@@ -38,11 +39,21 @@ export default function AIPricingPage() {
     <div className="page">
       <h1 className="page-title">Crop Price Guide</h1>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-        Rule-based estimates from static crop tables — not live market data or machine learning.
-        Use as a starting point only; verify prices locally before listing.
+        Multinational wholesale benchmarks (Uganda, Kenya, Tanzania, Rwanda) with live USD→local FX.
+        Snapshots are RATIN-aligned — verify at your local market before listing.
       </p>
 
       <div className="card">
+        <div className="form-group">
+          <label>Country</label>
+          <select value={country} onChange={(e) => setCountry(e.target.value as CountryCode)}>
+            {(Object.keys(COUNTRIES) as CountryCode[]).map((code) => (
+              <option key={code} value={code}>
+                {COUNTRIES[code].flag} {COUNTRIES[code].name} ({COUNTRIES[code].currency})
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="form-group">
           <label>Crop</label>
           <select value={crop} onChange={(e) => setCrop(e.target.value)}>
@@ -66,7 +77,9 @@ export default function AIPricingPage() {
 
       {result && (
         <div className="card" style={{ marginTop: '1rem' }}>
-          <h3 style={{ marginBottom: '0.75rem' }}>{result.crop} — {result.currency}</h3>
+          <h3 style={{ marginBottom: '0.75rem' }}>
+            {result.crop} — {COUNTRIES[country]?.flag} {result.currency}
+          </h3>
           <div className="grid-2">
             <div className="stat-card">
               <div className="stat-value" style={{ fontSize: '1.25rem' }}>
@@ -83,7 +96,27 @@ export default function AIPricingPage() {
           </div>
           <p style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
             Confidence: {(result.confidence * 100).toFixed(0)}% · Risk: {result.risk_score.level}
+            {result.method === 'live_market' ? ' · Live market quote' : ' · FX-adjusted estimate'}
           </p>
+          {result.market && (
+            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              {result.market.name}
+              {result.market.observed_date ? ` · observed ${result.market.observed_date}` : ''}
+              {result.market.day_change_pct != null && (
+                <> · day {result.market.day_change_pct > 0 ? '+' : ''}{result.market.day_change_pct}%</>
+              )}
+              {result.market.month_change_pct != null && (
+                <> · month {result.market.month_change_pct > 0 ? '+' : ''}{result.market.month_change_pct}%</>
+              )}
+            </p>
+          )}
+          {result.fx && (
+            <p style={{ marginTop: '0.35rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              FX {result.fx.base}/{result.fx.quote}: {result.fx.rate.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              {result.fx.live ? ' (live)' : ' (fallback)'}
+              {result.fx.updated_at ? ` · ${result.fx.updated_at}` : ''}
+            </p>
+          )}
           <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             {result.summary}
           </p>

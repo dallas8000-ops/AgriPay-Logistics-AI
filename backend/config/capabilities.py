@@ -6,6 +6,11 @@ from apps.payments.aggregator.flutterwave import FlutterwaveClient
 from apps.payments.mobile_money import MobileMoneyService
 from apps.payments.models import Payment
 
+try:
+    from apps.ai_services.market_data.fx import fetch_live_fx_rates
+except ImportError:
+    fetch_live_fx_rates = None
+
 
 def _status_label(mode: str) -> str:
     if mode == "live":
@@ -22,6 +27,12 @@ def build_capabilities() -> dict:
     whatsapp_gateway = bool(getattr(settings, "WHATSAPP_GATEWAY_URL", ""))
     product_mode = getattr(settings, "PRODUCT_MODE", "agri")
     flutterwave_live = FlutterwaveClient().is_configured()
+    fx_live = False
+    if fetch_live_fx_rates:
+        try:
+            fx_live = bool(fetch_live_fx_rates().get("live"))
+        except Exception:
+            fx_live = False
 
     merchant_any_live = any(m == "live" for m in modes.values())
     warnings: list[str] = []
@@ -115,9 +126,12 @@ def build_capabilities() -> dict:
             },
         },
         "ai_pricing": {
-            "status": "rule_based",
+            "status": "live_market" if fx_live else "market_snapshot",
             "description": (
-                "Crop price hints use static tables and season multipliers — not live market data or machine learning."
+                "Multinational wholesale benchmarks (UG, KE, TZ, RW) with live USD→local FX. "
+                "Crop snapshots are RATIN-aligned; refresh via manage.py refresh_market_data."
+                if fx_live
+                else "Multinational wholesale snapshots with static FX fallback — live rates unavailable."
             ),
             "available": product_mode == "agri",
         },

@@ -8,19 +8,42 @@ class Command(BaseCommand):
     help = "Seed demo data for AgriPay Logistics AI"
 
     def _align_demo_personas(self) -> None:
-        """Keep primary demo accounts Kenya/KES for portfolio consistency."""
+        """Keep primary demo accounts Uganda/UGX for portfolio consistency."""
+        try:
+            james = User.objects.get(username="james_farmer")
+            james.country = "UG"
+            james.phone = "+256772123456"
+            james.first_name = "James"
+            james.last_name = "Okello"
+            james.save(update_fields=["country", "phone", "first_name", "last_name"])
+            farmer = getattr(james, "farmer_profile", None)
+            if farmer:
+                farmer.farm_name = "Okello Family Farm"
+                farmer.location = "Mbale, Uganda"
+                farmer.mobile_money_number = "+256772123456"
+                farmer.mobile_money_provider = "mtn"
+                farmer.save(
+                    update_fields=[
+                        "farm_name",
+                        "location",
+                        "mobile_money_number",
+                        "mobile_money_provider",
+                    ]
+                )
+        except User.DoesNotExist:
+            pass
         try:
             mary = User.objects.get(username="mary_buyer")
-            mary.country = "KE"
-            mary.phone = "+254700123456"
+            mary.country = "UG"
+            mary.phone = "+256701234567"
             mary.first_name = "Mary"
-            mary.last_name = "Wanjiku"
+            mary.last_name = "Nambi"
             mary.save(update_fields=["country", "phone", "first_name", "last_name"])
             profile = getattr(mary, "buyer_profile", None)
             if profile:
-                profile.business_name = "Nairobi Fresh Markets Ltd"
-                profile.location = "Nairobi, Kenya"
-                profile.mobile_money_number = "+254700123456"
+                profile.business_name = "Kampala Fresh Markets Ltd"
+                profile.location = "Kampala, Uganda"
+                profile.mobile_money_number = "+256701234567"
                 profile.save(update_fields=["business_name", "location", "mobile_money_number"])
         except User.DoesNotExist:
             pass
@@ -40,18 +63,18 @@ class Command(BaseCommand):
             "james@agripay.africa",
             "demo12345",
             role=User.Role.FARMER,
-            country="KE",
-            phone="+254712345678",
+            country="UG",
+            phone="+256772123456",
             first_name="James",
-            last_name="Kariuki",
+            last_name="Okello",
         )
         FarmerProfile.objects.create(
             user=farmer,
-            farm_name="Kariuki Family Farm",
-            location="Nakuru, Kenya",
+            farm_name="Okello Family Farm",
+            location="Mbale, Uganda",
             primary_crops=["maize", "beans"],
-            mobile_money_number="+254712345678",
-            mobile_money_provider="mpesa",
+            mobile_money_number="+256772123456",
+            mobile_money_provider="mtn",
             onboarding_complete=True,
         )
         buyer = User.objects.create_user(
@@ -59,17 +82,17 @@ class Command(BaseCommand):
             "mary@agripay.africa",
             "demo12345",
             role=User.Role.BUYER,
-            country="KE",
-            phone="+254700123456",
+            country="UG",
+            phone="+256701234567",
             first_name="Mary",
-            last_name="Wanjiku",
+            last_name="Nambi",
         )
         BuyerProfile.objects.create(
             user=buyer,
-            business_name="Nairobi Fresh Markets Ltd",
+            business_name="Kampala Fresh Markets Ltd",
             business_type="Wholesale",
-            location="Nairobi, Kenya",
-            mobile_money_number="+254700123456",
+            location="Kampala, Uganda",
+            mobile_money_number="+256701234567",
             onboarding_complete=True,
         )
         driver = User.objects.create_user(
@@ -110,11 +133,11 @@ class Command(BaseCommand):
         )
 
         crops = [
-            ("maize", 500, 45, "KE", "Nakuru"),
-            ("coffee", 200, 850, "UG", "Mbale"),
+            ("maize", 500, 1800, "UG", "Mbale"),
+            ("coffee", 200, 8500, "UG", "Kapchorwa"),
             ("tomatoes", 150, 120, "TZ", "Arusha"),
             ("bananas", 300, 35, "RW", "Musanze"),
-            ("beans", 400, 180, "KE", "Eldoret"),
+            ("beans", 400, 6500, "UG", "Masaka"),
         ]
         sellers = [farmer, vendor]
         for i, (crop, qty, price, country, loc) in enumerate(crops):

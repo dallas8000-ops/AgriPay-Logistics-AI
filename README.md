@@ -78,11 +78,13 @@ Use **http://127.0.0.1:5174** — not `localhost:5173` (another Vite project on 
 
 ### Demo accounts
 
+Primary demo persona is **Uganda** (UGX, MTN MoMo) — sign in as `james_farmer` for invoices and SMS reconcile.
+
 | User | Password | Role |
 |------|----------|------|
 | admin | admin12345 | Admin |
-| james_farmer | demo12345 | Farmer |
-| mary_buyer | demo12345 | Buyer |
+| james_farmer | demo12345 | Farmer (Mbale, UG) |
+| mary_buyer | demo12345 | Buyer (Kampala, UG) |
 | peter_driver | demo12345 | Driver |
 | grace_vendor | demo12345 | Vendor |
 

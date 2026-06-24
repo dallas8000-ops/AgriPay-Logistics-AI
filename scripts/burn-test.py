@@ -136,7 +136,7 @@ def main() -> int:
                 "customer_phone": "+256700999888",
                 "description": "Burn test invoice — maize delivery",
                 "amount": "50000",
-                "currency": "KES",
+                "currency": "UGX",
             },
             timeout=10,
         )
@@ -172,7 +172,7 @@ def main() -> int:
             record("personal", "pay_instructions", "FAIL", str(e))
 
     sample_sms = (
-        "MTN Mobile Money: You have received KES 50,000 from 256700999888. "
+        "MTN Mobile Money: You have received UGX 50,000 from 256700999888. "
         f"Transaction ID: BURNTEST01. Ref INV-{invoice_id or 1}"
     )
     try:
@@ -267,7 +267,7 @@ def main() -> int:
                 "customer_phone": "+256700111222",
                 "description": "Separate pending invoice for aggregator test",
                 "amount": "1000",
-                "currency": "KES",
+                "currency": "UGX",
             },
             timeout=10,
         )
