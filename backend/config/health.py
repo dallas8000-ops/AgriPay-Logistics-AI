@@ -1,6 +1,8 @@
 from django.db import connection
 from django.http import JsonResponse
 
+from config.capabilities import build_capabilities
+
 
 def health_check(request):
     db_ok = True
@@ -32,7 +34,12 @@ def api_root(request):
                 "ai": "/api/ai/",
                 "disputes": "/api/disputes/",
                 "notifications": "/api/notifications/",
+                "capabilities": "/api/system/capabilities/",
                 "health": "/health/",
             },
         }
     )
+
+
+def capabilities_view(request):
+    return JsonResponse(build_capabilities())

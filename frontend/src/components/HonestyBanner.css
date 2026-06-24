@@ -1,0 +1,28 @@
+.honesty-banner {
+  background: var(--warning-bg, #fff8e6);
+  border-bottom: 1px solid var(--warning-border, #f0d78c);
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 0.65rem 1rem;
+  line-height: 1.45;
+}
+
+.honesty-banner strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.honesty-banner ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.honesty-banner li + li {
+  margin-top: 0.2rem;
+}
+
+[data-theme='dark'] .honesty-banner {
+  --warning-bg: #2a2418;
+  --warning-border: #5c4a20;
+}

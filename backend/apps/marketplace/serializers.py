@@ -48,6 +48,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "total_amount",
             "currency",
             "delivery_address",
+            "payment_reference",
+            "collection_method",
             "status",
             "notes",
             "created_at",

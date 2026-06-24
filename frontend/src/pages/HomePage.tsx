@@ -1,9 +1,10 @@
 import { Link, Navigate } from 'react-router-dom';
 import {
-  AlertCircle, Bell, CreditCard, Leaf, ShoppingBag, Sparkles, Truck, Wallet,
+  AlertCircle, Bell, CreditCard, ShoppingBag, Sparkles, Truck, Wallet,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isAgriMode, useCapabilities } from '../context/CapabilitiesContext';
 import {
   aiApi, COUNTRIES, logisticsApi, marketplaceApi, notificationsApi,
   type ProduceListing,
@@ -13,15 +14,15 @@ import { ProduceCardLink } from '../components/ProduceCard';
 
 const QUICK_ACTIONS: Record<string, Array<{ to: string; icon: typeof ShoppingBag; label: string; desc: string }>> = {
   farmer: [
-    { to: '/marketplace', icon: ShoppingBag, label: 'Sell Produce', desc: 'List crops & set prices' },
-    { to: '/ai-pricing', icon: Leaf, label: 'AI Pricing', desc: 'Smart market estimates' },
+    { to: '/invoices', icon: Wallet, label: 'Payment Requests', desc: 'Invoice any buyer with INV reference' },
+    { to: '/reconcile', icon: Wallet, label: 'Reconcile SMS', desc: 'Match MoMo confirmations' },
+    { to: '/marketplace', icon: ShoppingBag, label: 'Sell Produce', desc: 'Optional marketplace listings' },
     { to: '/deliveries', icon: Truck, label: 'Deliveries', desc: 'Track shipments' },
-    { to: '/notifications', icon: Bell, label: 'Alerts', desc: 'Orders & payments' },
   ],
   vendor: [
-    { to: '/marketplace', icon: ShoppingBag, label: 'My Listings', desc: 'Manage inventory' },
-    { to: '/ai-pricing', icon: Leaf, label: 'AI Pricing', desc: 'Optimize margins' },
-    { to: '/notifications', icon: Bell, label: 'Alerts', desc: 'Buyer activity' },
+    { to: '/invoices', icon: Wallet, label: 'Payment Requests', desc: 'Collect from any customer' },
+    { to: '/reconcile', icon: Wallet, label: 'Reconcile SMS', desc: 'Replace the notebook' },
+    { to: '/marketplace', icon: ShoppingBag, label: 'My Listings', desc: 'Optional produce inventory' },
   ],
   buyer: [
     { to: '/marketplace', icon: ShoppingBag, label: 'Browse Market', desc: 'Fresh produce near you' },
@@ -37,6 +38,8 @@ const QUICK_ACTIONS: Record<string, Array<{ to: string; icon: typeof ShoppingBag
 
 export default function HomePage() {
   const { user } = useAuth();
+  const caps = useCapabilities();
+  const agri = isAgriMode(caps);
   const [listings, setListings] = useState<ProduceListing[]>([]);
   const [buyerScore, setBuyerScore] = useState<{ score: number; tier: string; summary: string } | null>(null);
   const [stats, setStats] = useState({ orders: 0, deliveries: 0, unread: 0 });
@@ -56,7 +59,14 @@ export default function HomePage() {
   }
 
   const country = user?.country ? COUNTRIES[user.country as keyof typeof COUNTRIES] : null;
-  const actions = QUICK_ACTIONS[user?.role || 'buyer'] || QUICK_ACTIONS.buyer;
+  const actions = agri
+    ? (QUICK_ACTIONS[user?.role || 'buyer'] || QUICK_ACTIONS.buyer)
+    : user?.role === 'buyer'
+      ? [{ to: '/orders', icon: CreditCard, label: 'Payments', desc: 'View and pay pending orders' }]
+      : [
+          { to: '/invoices', icon: Wallet, label: 'Payment requests', desc: 'Create and track INV references' },
+          { to: '/reconcile', icon: Wallet, label: 'Reconcile SMS', desc: 'Match MoMo confirmations' },
+        ];
   const roleLabel = ROLE_LABELS[user?.role || 'buyer'] || 'Member';
 
   return (
@@ -65,10 +75,13 @@ export default function HomePage() {
         <div className="dashboard-hero-content">
           <span className="dashboard-role-pill">{roleLabel}</span>
           <p className="welcome-greeting">Karibu, {user?.first_name || user?.username} 👋</p>
-          <h1 className="dashboard-headline">Your AgriPay Hub</h1>
+          <h1 className="dashboard-headline">{caps?.product_name || 'Your AgriPay Hub'}</h1>
+          {caps?.tagline && agri === false && (
+            <p className="welcome-meta" style={{ marginTop: '0.35rem' }}>{caps.tagline}</p>
+          )}
           {country && (
             <p className="welcome-meta">
-              {country.flag} {country.name} · {user?.currency} · Mobile money ready
+              {country.flag} {country.name} · {user?.currency}
             </p>
           )}
         </div>
@@ -135,16 +148,25 @@ export default function HomePage() {
 
       <section className="dashboard-section">
         <div className="section-header-row">
-          <h2 className="section-title">Payment Rails</h2>
+          <h2 className="section-title">How payments work</h2>
+          {(user?.role === 'farmer' || user?.role === 'vendor') && (
+            <Link to="/reconcile" className="section-link">Reconcile →</Link>
+          )}
         </div>
+        <p className="page-subtitle" style={{ marginBottom: '0.65rem' }}>
+          Collect on your <strong>personal</strong> MoMo number — primary path for farmers and traders.
+          Use <strong>INV-</strong> references for any sale or <strong>AGR-</strong> for marketplace orders.
+          Paste SMS confirmations on Reconcile. Marketplace and deliveries are optional add-ons.
+        </p>
         <div className="payment-rails">
-          <span className="payment-rail">📱 MTN MoMo</span>
-          <span className="payment-rail">📱 Airtel Money</span>
-          <span className="payment-rail">📱 M-Pesa</span>
+          <span className="payment-rail">📒 SMS reconciliation</span>
+          <span className="payment-rail">📱 Personal MoMo</span>
+          <span className="payment-rail">🏪 Merchant API (optional)</span>
           <span className="payment-rail">💳 Stripe</span>
         </div>
       </section>
 
+      {agri && (
       <section className="dashboard-section">
         <div className="section-header-row">
           <h2 className="section-title">Fresh Produce</h2>
@@ -166,7 +188,9 @@ export default function HomePage() {
           </div>
         )}
       </section>
+      )}
 
+      {agri && (
       <section className="dashboard-section">
         <h2 className="section-title">Platform Coverage</h2>
         <div className="region-chips">
@@ -177,6 +201,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

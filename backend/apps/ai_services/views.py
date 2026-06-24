@@ -19,6 +19,10 @@ class PriceEstimateView(APIView):
         if not crop:
             return Response({"detail": "crop is required"}, status=400)
         result = estimate_price(crop, country, float(quantity), season)
+        result["method"] = "rule_based"
+        result["method_note"] = (
+            "Static crop price tables with season multipliers — not live market feeds or ML."
+        )
         return Response(result)
 
 

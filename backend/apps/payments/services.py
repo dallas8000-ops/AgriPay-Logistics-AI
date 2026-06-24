@@ -4,52 +4,14 @@ from django.conf import settings
 
 import stripe
 
+from .mobile_money import MobileMoneyService
+
+__all__ = ["MobileMoneyService", "StripeService", "get_stripe"]
+
 
 def get_stripe():
     stripe.api_key = settings.STRIPE_SECRET_KEY
     return stripe
-
-
-class MobileMoneyService:
-    """Sandbox structure for MTN MoMo and Airtel Money."""
-
-    @staticmethod
-    def initiate_mtn_payment(payment, phone: str) -> dict:
-        reference = f"MTN-{payment.id.hex[:12].upper()}"
-        payment.external_reference = reference
-        payment.status = payment.Status.PROCESSING
-        payment.phone_number = phone
-        payment.save()
-        return {
-            "reference": reference,
-            "status": "processing",
-            "message": "USSD prompt sent to phone (sandbox simulation)",
-            "sandbox": True,
-            "provider": "mtn_momo",
-        }
-
-    @staticmethod
-    def initiate_airtel_payment(payment, phone: str) -> dict:
-        reference = f"AIRTEL-{payment.id.hex[:12].upper()}"
-        payment.external_reference = reference
-        payment.status = payment.Status.PROCESSING
-        payment.phone_number = phone
-        payment.save()
-        return {
-            "reference": reference,
-            "status": "processing",
-            "message": "Airtel Money request initiated (sandbox simulation)",
-            "sandbox": True,
-            "provider": "airtel_money",
-        }
-
-    @staticmethod
-    def confirm_sandbox_payment(payment) -> dict:
-        payment.status = payment.Status.COMPLETED
-        payment.save()
-        payment.order.status = payment.order.Status.PAID
-        payment.order.save(update_fields=["status"])
-        return {"status": "completed", "reference": payment.external_reference}
 
 
 class StripeService:
@@ -67,11 +29,16 @@ class StripeService:
         payment.stripe_payment_intent_id = intent.id
         payment.external_reference = intent.id
         payment.status = payment.Status.PROCESSING
+        payment.metadata = {
+            **(payment.metadata or {}),
+            "integration_mode": "live",
+        }
         payment.save()
         return {
             "client_secret": intent.client_secret,
             "payment_intent_id": intent.id,
             "publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+            "integration_mode": "live",
         }
 
     @staticmethod
@@ -80,12 +47,17 @@ class StripeService:
         payment.stripe_payment_intent_id = ref
         payment.external_reference = ref
         payment.status = payment.Status.PROCESSING
+        payment.metadata = {
+            **(payment.metadata or {}),
+            "integration_mode": "simulated",
+        }
         payment.save()
         return {
             "client_secret": f"{ref}_secret_sandbox",
             "payment_intent_id": ref,
             "publishable_key": settings.STRIPE_PUBLISHABLE_KEY or "pk_test_sandbox",
-            "sandbox": True,
+            "integration_mode": "simulated",
+            "requires_manual_confirm": True,
         }
 
     @staticmethod

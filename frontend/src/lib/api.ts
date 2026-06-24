@@ -51,6 +51,8 @@ export interface Order {
   total_amount: string;
   currency: string;
   delivery_address: string;
+  payment_reference?: string;
+  collection_method?: string;
   status: string;
   created_at: string;
 }
@@ -95,11 +97,116 @@ export interface PriceEstimate {
   confidence: number;
   risk_score: { level: string; score: number };
   summary: string;
+  method?: string;
+  method_note?: string;
+}
+
+export interface Capabilities {
+  product_mode: 'agri' | 'sme_payments';
+  product_name: string;
+  tagline: string;
+  invoices?: { status: string; description: string };
+  collection: {
+    personal_transfer: { status: string; description: string };
+    sms_reconciliation: { status: string; description: string };
+    merchant_api: {
+      status: string;
+      providers: Record<string, string>;
+      description: string;
+    };
+    stripe: { status: string; description: string };
+    flutterwave?: { status: string; description: string };
+  };
+  notifications: {
+    in_app: { status: string };
+    sms: { status: string; description: string };
+    whatsapp: { status: string; description: string };
+  };
+  ai_pricing: { status: string; description: string; available: boolean };
+  marketplace: { status: string; vertical: string; available: boolean; description: string };
+  logistics: { status: string; available: boolean; description: string };
+  warnings: string[];
 }
 
 export interface PaymentConfig {
   stripe_publishable_key: string;
-  providers: Array<{ id: string; name: string; countries: string[] }>;
+  stripe_integration_mode?: 'live' | 'simulated';
+  default_collection_mode?: 'personal_transfer' | 'integrated';
+  personal_transfer_description?: string;
+  providers: Array<{
+    id: string;
+    name: string;
+    countries: string[];
+    integration_mode: 'live' | 'simulated';
+  }>;
+}
+
+export interface PersonalPaymentInstructions {
+  collection_mode: string;
+  requires_merchant_account: boolean;
+  seller_name: string;
+  payee_phone: string;
+  provider: string;
+  provider_label: string;
+  amount: string;
+  currency: string;
+  payment_reference: string;
+  description?: string;
+  customer_name?: string;
+  invoice_id?: number;
+  instructions: string[];
+}
+
+export interface Invoice {
+  id: number;
+  seller: number;
+  seller_name: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string;
+  description: string;
+  amount: string;
+  currency: string;
+  payment_reference: string;
+  status: string;
+  collection_method: string;
+  due_date: string | null;
+  notes: string;
+  created_at: string;
+}
+
+export interface LedgerEntry {
+  id: number;
+  owner: number;
+  recorded_by: number;
+  order: number | null;
+  invoice: number | null;
+  order_reference: string;
+  invoice_reference: string;
+  source: string;
+  status: string;
+  raw_sms: string;
+  amount: string | null;
+  currency: string;
+  provider: string;
+  txn_reference: string;
+  payer_phone: string;
+  parse_confidence: string;
+  notes: string;
+  suggested_order_ids: number[];
+  suggested_invoice_ids: number[];
+  created_at: string;
+}
+
+export interface ReconciliationSummary {
+  pending_orders_count: number;
+  pending_invoices_count?: number;
+  expected_collections: string;
+  recorded_collections: string;
+  unmatched_entries_count: number;
+  matched_entries_count: number;
+  collection_mode: string;
+  message: string;
 }
 
 function getToken(): string | null {
@@ -131,6 +238,10 @@ export async function api<T>(
   if (res.status === 204) return {} as T;
   return res.json();
 }
+
+export const capabilitiesApi = {
+  get: () => api<Capabilities>('/system/capabilities/'),
+};
 
 export const authApi = {
   login: (username: string, password: string) =>
@@ -173,6 +284,13 @@ export const logisticsApi = {
 
 export const paymentsApi = {
   config: () => api<PaymentConfig>('/payments/config/'),
+  instructions: (order_id: number) =>
+    api<PersonalPaymentInstructions>(`/payments/collect/instructions/?order_id=${order_id}`),
+  buyerClaim: (data: { order_id: number; raw_sms?: string; notes?: string }) =>
+    api<{ entry: LedgerEntry; message: string }>('/payments/collect/buyer-claim/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   create: (order_id: number, provider: string, phone_number?: string) =>
     api<{ payment: unknown; checkout: Record<string, unknown> }>('/payments/', {
       method: 'POST',
@@ -180,6 +298,48 @@ export const paymentsApi = {
     }),
   confirm: (id: string) =>
     api(`/payments/${id}/confirm/`, { method: 'POST' }),
+  status: (id: string) =>
+    api<{ status: string; integration_mode?: string; provider_status?: string; message?: string }>(
+      `/payments/${id}/status/`
+    ),
+};
+
+export const invoiceApi = {
+  list: () => api<{ results: Invoice[] }>('/payments/invoices/').then((r) => r.results),
+  create: (data: Partial<Invoice>) =>
+    api<Invoice>('/payments/invoices/', { method: 'POST', body: JSON.stringify(data) }),
+  instructions: (id: number) =>
+    api<PersonalPaymentInstructions & { invoice_id?: number; customer_name?: string; description?: string }>(
+      `/payments/invoices/${id}/instructions/`
+    ),
+  pay: (id: number, redirect_url?: string) =>
+    api<{ payment_id: string; checkout: { link: string; message: string } }>(`/payments/invoices/${id}/pay/`, {
+      method: 'POST',
+      body: JSON.stringify({ redirect_url: redirect_url || window.location.origin + `/invoices/${id}/paid` }),
+    }),
+  summary: () => api<{ pending_count: number; pending_amount: string; currency: string }>('/payments/invoices/summary/'),
+};
+
+export const ledgerApi = {
+  list: () => api<{ results: LedgerEntry[] }>('/payments/ledger/').then((r) => r.results),
+  create: (data: { raw_sms?: string; source?: string; notes?: string }) =>
+    api<LedgerEntry>('/payments/ledger/', { method: 'POST', body: JSON.stringify(data) }),
+  parseSms: (text: string) =>
+    api<Record<string, unknown>>('/payments/ledger/parse_sms/', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
+  summary: () => api<ReconciliationSummary>('/payments/ledger/summary/'),
+  match: (id: number, order_id: number) =>
+    api(`/payments/ledger/${id}/match/`, {
+      method: 'POST',
+      body: JSON.stringify({ order_id }),
+    }),
+  matchInvoice: (id: number, invoice_id: number) =>
+    api(`/payments/ledger/${id}/match-invoice/`, {
+      method: 'POST',
+      body: JSON.stringify({ invoice_id }),
+    }),
 };
 
 export const aiApi = {

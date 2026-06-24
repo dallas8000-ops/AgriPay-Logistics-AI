@@ -61,6 +61,16 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=14, decimal_places=2)
     currency = models.CharField(max_length=3, default="KES")
     delivery_address = models.CharField(max_length=500)
+    payment_reference = models.CharField(max_length=32, blank=True)
+    collection_method = models.CharField(
+        max_length=30,
+        choices=[
+            ("personal_transfer", "Personal mobile money"),
+            ("integrated", "Merchant API"),
+            ("stripe", "Stripe"),
+        ],
+        default="personal_transfer",
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -68,6 +78,13 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        super().save(*args, **kwargs)
+        if creating and not self.payment_reference:
+            self.payment_reference = f"AGR-{self.pk}"
+            super().save(update_fields=["payment_reference"])
 
     def __str__(self):
         return f"Order #{self.pk} - {self.listing.crop}"

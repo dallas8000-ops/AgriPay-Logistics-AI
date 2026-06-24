@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useCapabilities } from '../context/CapabilitiesContext';
 import { COUNTRIES } from '../lib/api';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
+  const caps = useCapabilities();
   const { theme, toggleTheme } = useTheme();
   const country = user?.country ? COUNTRIES[user.country as keyof typeof COUNTRIES] : null;
   const [smsAlerts, setSmsAlerts] = useState(true);
@@ -65,23 +67,39 @@ export default function SettingsPage() {
 
       <div className="card" style={{ marginTop: '1rem' }}>
         <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem' }}>Notification Preferences</h3>
-        <label className="list-item" style={{ cursor: 'pointer' }}>
-          <span>📱 SMS alerts</span>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+          In-app alerts are always on. External channels require gateway configuration on the server.
+        </p>
+        <label className="list-item" style={{ cursor: caps?.notifications.sms.status === 'operational' ? 'pointer' : 'not-allowed', opacity: caps?.notifications.sms.status === 'operational' ? 1 : 0.55 }}>
+          <span>📱 SMS alerts {caps?.notifications.sms.status !== 'operational' && '(not configured)'}</span>
           <input
             type="checkbox"
             checked={smsAlerts}
+            disabled={caps?.notifications.sms.status !== 'operational'}
             onChange={(e) => togglePref('notify_sms', e.target.checked, setSmsAlerts)}
           />
         </label>
-        <label className="list-item" style={{ cursor: 'pointer' }}>
-          <span>💬 WhatsApp alerts</span>
+        <label className="list-item" style={{ cursor: caps?.notifications.whatsapp.status === 'operational' ? 'pointer' : 'not-allowed', opacity: caps?.notifications.whatsapp.status === 'operational' ? 1 : 0.55 }}>
+          <span>💬 WhatsApp alerts {caps?.notifications.whatsapp.status !== 'operational' && '(not configured)'}</span>
           <input
             type="checkbox"
             checked={whatsappAlerts}
+            disabled={caps?.notifications.whatsapp.status !== 'operational'}
             onChange={(e) => togglePref('notify_whatsapp', e.target.checked, setWhatsappAlerts)}
           />
         </label>
       </div>
+
+      {caps && caps.warnings.length > 0 && (
+        <div className="card" style={{ marginTop: '1rem', fontSize: '0.82rem' }}>
+          <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>What this deployment supports</h3>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', color: 'var(--text-muted)' }}>
+            <li>{caps.collection.personal_transfer.description}</li>
+            <li>{caps.collection.sms_reconciliation.description}</li>
+            <li>{caps.collection.merchant_api.description}</li>
+          </ul>
+        </div>
+      )}
 
       {deferredPrompt && (
         <button className="btn btn-primary btn-block" style={{ marginTop: '1rem' }} onClick={installApp}>

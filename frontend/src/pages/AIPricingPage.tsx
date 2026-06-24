@@ -36,9 +36,10 @@ export default function AIPricingPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">AI Price Estimate</h1>
+      <h1 className="page-title">Crop Price Guide</h1>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-        Get smart pricing by crop, location, quantity, and season across East Africa.
+        Rule-based estimates from static crop tables — not live market data or machine learning.
+        Use as a starting point only; verify prices locally before listing.
       </p>
 
       <div className="card">
@@ -59,7 +60,7 @@ export default function AIPricingPage() {
           </select>
         </div>
         <button className="btn btn-primary btn-block" onClick={estimate} disabled={loading}>
-          {loading ? 'Calculating…' : 'Get AI Estimate'}
+          {loading ? 'Calculating…' : 'Get estimate'}
         </button>
       </div>
 
@@ -86,6 +87,11 @@ export default function AIPricingPage() {
           <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             {result.summary}
           </p>
+          {result.method_note && (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {result.method_note}
+            </p>
+          )}
         </div>
       )}
     </div>

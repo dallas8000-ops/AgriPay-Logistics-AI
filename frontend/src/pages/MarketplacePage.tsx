@@ -167,7 +167,7 @@ export default function MarketplacePage() {
         <div className="modal-overlay" onClick={() => setOrderModal(null)}>
           <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={handleOrder}>
             <h3>Order {orderModal.crop}</h3>
-            <p className="modal-subtitle">Secure checkout with mobile money or card</p>
+            <p className="modal-subtitle">Pay via personal transfer — send to seller&apos;s number with reference AGR-{'{order}'}</p>
             <div className="form-group">
               <label>Quantity (kg)</label>
               <input type="number" value={orderForm.quantity_kg} onChange={(e) => setOrderForm({ ...orderForm, quantity_kg: e.target.value })} required max={orderModal.quantity_kg} />

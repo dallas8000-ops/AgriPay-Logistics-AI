@@ -146,17 +146,45 @@ SUPPORTED_COUNTRIES = {
     "RW": {"name": "Rwanda", "currency": "RWF", "phone_prefix": "+250"},
 }
 
-# Mobile money sandbox
+# Mobile money — live sandbox when credentials are set; otherwise explicit simulation
 MTN_MOMO_API_USER = config("MTN_MOMO_API_USER", default="")
 MTN_MOMO_API_KEY = config("MTN_MOMO_API_KEY", default="")
 MTN_MOMO_SUBSCRIPTION_KEY = config("MTN_MOMO_SUBSCRIPTION_KEY", default="")
 MTN_MOMO_ENV = config("MTN_MOMO_ENV", default="sandbox")
+MTN_MOMO_CALLBACK_URL = config("MTN_MOMO_CALLBACK_URL", default="")
+
 AIRTEL_MONEY_CLIENT_ID = config("AIRTEL_MONEY_CLIENT_ID", default="")
 AIRTEL_MONEY_CLIENT_SECRET = config("AIRTEL_MONEY_CLIENT_SECRET", default="")
+AIRTEL_MONEY_ENV = config("AIRTEL_MONEY_ENV", default="sandbox")
+AIRTEL_MONEY_COUNTRY = config("AIRTEL_MONEY_COUNTRY", default="UG")
+AIRTEL_MONEY_CURRENCY = config("AIRTEL_MONEY_CURRENCY", default="UGX")
+
+MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
+MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET", default="")
+MPESA_PASSKEY = config("MPESA_PASSKEY", default="")
+MPESA_SHORTCODE = config("MPESA_SHORTCODE", default="")
+MPESA_ENV = config("MPESA_ENV", default="sandbox")
+MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL", default="")
 
 # Stripe
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY", default="")
 STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
+
+# agri = full platform (default GTM); sme_payments = collections-first UI
+PRODUCT_MODE = config("PRODUCT_MODE", default="agri")
+
+# Flutterwave aggregator (MTN/Airtel/M-Pesa/card via single checkout link)
+FLUTTERWAVE_PUBLIC_KEY = config("FLUTTERWAVE_PUBLIC_KEY", default="")
+FLUTTERWAVE_SECRET_KEY = config("FLUTTERWAVE_SECRET_KEY", default="")
+FLUTTERWAVE_WEBHOOK_SECRET = config("FLUTTERWAVE_WEBHOOK_SECRET", default="")
+FLUTTERWAVE_PAYMENT_OPTIONS = config(
+    "FLUTTERWAVE_PAYMENT_OPTIONS",
+    default="mobilemoneyuganda,mobilemoneyrwanda,mpesa,mobilemoneyghana,card",
+)
+
+# Optional notification gateways — without these, SMS/WhatsApp are in-app records only
+SMS_GATEWAY_URL = config("SMS_GATEWAY_URL", default="")
+WHATSAPP_GATEWAY_URL = config("WHATSAPP_GATEWAY_URL", default="")
 
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")

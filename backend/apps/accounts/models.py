@@ -47,6 +47,14 @@ class FarmerProfile(models.Model):
         choices=[("mtn", "MTN"), ("airtel", "Airtel"), ("mpesa", "M-Pesa")],
         blank=True,
     )
+    collection_tier = models.CharField(
+        max_length=20,
+        choices=[
+            ("personal", "Personal number only (no merchant account)"),
+            ("merchant", "Registered business / merchant account"),
+        ],
+        default="personal",
+    )
     onboarding_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -61,6 +69,14 @@ class VendorProfile(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     mobile_money_number = models.CharField(max_length=20, blank=True)
+    collection_tier = models.CharField(
+        max_length=20,
+        choices=[
+            ("personal", "Personal number only (no merchant account)"),
+            ("merchant", "Registered business / merchant account"),
+        ],
+        default="personal",
+    )
     onboarding_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,23 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Sparkles, Truck, Wallet } from 'lucide-react';
+import { BookOpen, Shield, Wallet } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { COUNTRIES } from '../lib/api';
-
-const FEATURES = [
-  { icon: Wallet, title: 'Mobile Money', desc: 'MTN, Airtel & M-Pesa sandbox payments' },
-  { icon: Truck, title: 'Logistics', desc: 'Driver tracking & proof-of-delivery' },
-  { icon: Sparkles, title: 'AI Pricing', desc: 'Smart crop estimates & buyer scores' },
-  { icon: Shield, title: 'Disputes', desc: 'Protected trades across 4 countries' },
-];
+import { capabilitiesApi, COUNTRIES, type Capabilities } from '../lib/api';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [caps, setCaps] = useState<Capabilities | null>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    capabilitiesApi.get().then(setCaps).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,13 +31,19 @@ export default function LoginPage() {
     }
   };
 
+  const features = [
+    { icon: Wallet, title: 'Personal-number collection', desc: caps?.collection.personal_transfer.description.slice(0, 72) + '…' || 'Collect without a merchant account' },
+    { icon: BookOpen, title: 'SMS reconciliation', desc: caps?.collection.sms_reconciliation.description.slice(0, 72) + '…' || 'Paste confirmations — replace the notebook' },
+    { icon: Shield, title: 'Honest deployment', desc: 'Only features configured on this server are offered at checkout' },
+  ];
+
   return (
     <div className="auth-page auth-page--split">
       <aside className="auth-showcase">
         <span className="auth-logo">🌾</span>
-        <h1>AgriPay Logistics AI</h1>
+        <h1>{caps?.product_name || 'AgriPay'}</h1>
         <p className="auth-tagline">
-          The mobile-first platform connecting farmers, vendors, buyers & truck drivers across East Africa.
+          {caps?.tagline || 'East Africa payments and reconciliation for SMEs and traders.'}
         </p>
         <div className="country-flags">
           {Object.values(COUNTRIES).map((c) => (
@@ -47,7 +51,7 @@ export default function LoginPage() {
           ))}
         </div>
         <ul className="auth-feature-list">
-          {FEATURES.map(({ icon: Icon, title, desc }) => (
+          {features.map(({ icon: Icon, title, desc }) => (
             <li key={title}>
               <span className="auth-feature-icon"><Icon size={18} /></span>
               <div>
