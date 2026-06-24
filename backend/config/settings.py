@@ -151,6 +151,7 @@ MTN_MOMO_API_USER = config("MTN_MOMO_API_USER", default="")
 MTN_MOMO_API_KEY = config("MTN_MOMO_API_KEY", default="")
 MTN_MOMO_SUBSCRIPTION_KEY = config("MTN_MOMO_SUBSCRIPTION_KEY", default="")
 MTN_MOMO_ENV = config("MTN_MOMO_ENV", default="sandbox")
+MTN_MOMO_TARGET_ENV = config("MTN_MOMO_TARGET_ENV", default="sandbox")
 MTN_MOMO_CALLBACK_URL = config("MTN_MOMO_CALLBACK_URL", default="")
 
 AIRTEL_MONEY_CLIENT_ID = config("AIRTEL_MONEY_CLIENT_ID", default="")

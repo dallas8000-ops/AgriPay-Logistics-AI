@@ -21,6 +21,7 @@ class MTNMoMoClient:
         self.api_key = settings.MTN_MOMO_API_KEY
         self.subscription_key = settings.MTN_MOMO_SUBSCRIPTION_KEY
         self.env = settings.MTN_MOMO_ENV or "sandbox"
+        self.target_env = getattr(settings, "MTN_MOMO_TARGET_ENV", None) or self.env
         self.callback_url = settings.MTN_MOMO_CALLBACK_URL
 
     @property
@@ -49,6 +50,12 @@ class MTNMoMoClient:
             raise MTNMoMoError("MTN token response missing access_token")
         return token
 
+    def _sandbox_amount_currency(self, amount: str, currency: str) -> tuple[str, str]:
+        """MTN sandbox target env only accepts EUR."""
+        if self.env == "sandbox":
+            return "1", "EUR"
+        return amount, currency
+
     def request_to_pay(
         self,
         *,
@@ -61,11 +68,12 @@ class MTNMoMoClient:
         payee_note: str,
     ) -> dict[str, Any]:
         token = self.get_access_token()
+        amount, currency = self._sandbox_amount_currency(amount, currency)
         url = f"{self.base_url}/collection/v1_0/requesttopay"
         headers = {
             "Authorization": f"Bearer {token}",
             "X-Reference-Id": reference_id,
-            "X-Target-Environment": self.env if self.env != "production" else "mtnuganda",
+            "X-Target-Environment": self.target_env if self.target_env != "production" else "mtnuganda",
             "Ocp-Apim-Subscription-Key": self.subscription_key,
             "Content-Type": "application/json",
         }
@@ -93,7 +101,7 @@ class MTNMoMoClient:
         url = f"{self.base_url}/collection/v1_0/requesttopay/{reference_id}"
         headers = {
             "Authorization": f"Bearer {token}",
-            "X-Target-Environment": self.env if self.env != "production" else "mtnuganda",
+            "X-Target-Environment": self.target_env if self.target_env != "production" else "mtnuganda",
             "Ocp-Apim-Subscription-Key": self.subscription_key,
         }
         response = requests.get(url, headers=headers, timeout=30)

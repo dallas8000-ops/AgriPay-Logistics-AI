@@ -19,6 +19,10 @@ class FlutterwaveClient:
     def is_configured(self) -> bool:
         return bool(settings.FLUTTERWAVE_SECRET_KEY)
 
+    def is_test_mode(self) -> bool:
+        key = settings.FLUTTERWAVE_SECRET_KEY or ""
+        return "TEST" in key.upper()
+
     def _headers(self) -> dict:
         return {
             "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
@@ -74,7 +78,7 @@ class FlutterwaveClient:
             "link": data["data"]["link"],
             "flw_ref": data["data"].get("flw_ref", ""),
             "tx_ref": tx_ref,
-            "integration_mode": "live",
+            "integration_mode": "sandbox" if self.is_test_mode() else "live",
             "provider": "flutterwave",
             "message": "Complete payment on the Flutterwave checkout page (sandbox or live per your keys).",
         }

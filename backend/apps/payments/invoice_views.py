@@ -55,6 +55,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             )
 
         tx_ref = FlutterwaveClient.new_tx_ref(invoice.payment_reference)
+        mode = "sandbox" if client.is_test_mode() else "live"
         payment = Payment.objects.create(
             invoice=invoice,
             payer=request.user if request.user.is_authenticated else None,
@@ -63,7 +64,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             provider=Payment.Provider.FLUTTERWAVE,
             status=Payment.Status.PROCESSING,
             external_reference=tx_ref,
-            metadata={"integration_mode": "live", "invoice_id": invoice.pk},
+            metadata={"integration_mode": mode, "invoice_id": invoice.pk},
         )
 
         try:
