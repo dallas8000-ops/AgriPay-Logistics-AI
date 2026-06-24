@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, invoiceApi, type Invoice } from '../lib/api';
+import { phonePlaceholder } from '../lib/locale';
 
 export default function InvoicesPage() {
   const { user } = useAuth();
@@ -64,7 +65,7 @@ export default function InvoicesPage() {
           </div>
           <div className="form-group">
             <label>Customer phone</label>
-            <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} placeholder="+256…" />
+            <input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} placeholder={phonePlaceholder(user?.country)} />
           </div>
           <div className="form-group">
             <label>What is this payment for?</label>

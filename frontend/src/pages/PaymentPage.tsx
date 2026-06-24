@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { merchantApiLive, stripeLive, useCapabilities } from '../context/CapabilitiesContext';
+import { useAuth } from '../context/AuthContext';
+import { phonePlaceholder } from '../lib/locale';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import {
@@ -74,6 +76,7 @@ export default function PaymentPage() {
   const [polling, setPolling] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const caps = useCapabilities();
+  const { user } = useAuth();
   const showMerchant = merchantApiLive(caps) || stripeLive(caps);
 
   useEffect(() => {
@@ -263,7 +266,7 @@ export default function PaymentPage() {
           {provider !== 'stripe' && (
             <div className="form-group">
               <label>Your Mobile Money Number</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+256…" />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={phonePlaceholder(user?.country)} />
             </div>
           )}
           {msg && <p className="error-msg">{msg}</p>}

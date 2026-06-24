@@ -91,7 +91,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {!navigator.onLine && (
         <div className="offline-banner">Offline mode — changes will sync when connected</div>
       )}
-      <HonestyBanner />
       <header className="app-header">
         <div className="header-brand">
           <span className="brand-icon">🌾</span>
@@ -115,6 +114,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="app-main">{children}</main>
+
+      <HonestyBanner />
 
       <nav className="bottom-nav">
         {nav.map(({ to, icon: Icon, label }) => (

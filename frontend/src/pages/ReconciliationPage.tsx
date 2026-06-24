@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { formatCurrency, ledgerApi, type LedgerEntry, type ReconciliationSummary } from '../lib/api';
+import { smsPasteExample } from '../lib/locale';
+import { useAuth } from '../context/AuthContext';
 
 export default function ReconciliationPage() {
+  const { user } = useAuth();
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [smsText, setSmsText] = useState('');
@@ -103,7 +106,7 @@ export default function ReconciliationPage() {
           value={smsText}
           onChange={(e) => setSmsText(e.target.value)}
           rows={5}
-          placeholder="You have received UGX 50,000 from 2567... Transaction ID: 1234567890. Ref AGR-12"
+          placeholder={smsPasteExample(user?.currency, user?.country)}
           style={{ width: '100%', marginBottom: '0.75rem' }}
         />
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

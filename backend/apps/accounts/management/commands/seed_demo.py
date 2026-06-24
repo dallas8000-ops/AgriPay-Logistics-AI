@@ -7,7 +7,27 @@ from apps.marketplace.models import ProduceListing
 class Command(BaseCommand):
     help = "Seed demo data for AgriPay Logistics AI"
 
+    def _align_demo_personas(self) -> None:
+        """Keep primary demo accounts Kenya/KES for portfolio consistency."""
+        try:
+            mary = User.objects.get(username="mary_buyer")
+            mary.country = "KE"
+            mary.phone = "+254700123456"
+            mary.first_name = "Mary"
+            mary.last_name = "Wanjiku"
+            mary.save(update_fields=["country", "phone", "first_name", "last_name"])
+            profile = getattr(mary, "buyer_profile", None)
+            if profile:
+                profile.business_name = "Nairobi Fresh Markets Ltd"
+                profile.location = "Nairobi, Kenya"
+                profile.mobile_money_number = "+254700123456"
+                profile.save(update_fields=["business_name", "location", "mobile_money_number"])
+        except User.DoesNotExist:
+            pass
+
     def handle(self, *args, **options):
+        self._align_demo_personas()
+
         if User.objects.filter(username="admin").exists():
             self.stdout.write("Seed data already exists, skipping.")
             return
@@ -39,17 +59,17 @@ class Command(BaseCommand):
             "mary@agripay.africa",
             "demo12345",
             role=User.Role.BUYER,
-            country="UG",
-            phone="+256700123456",
+            country="KE",
+            phone="+254700123456",
             first_name="Mary",
-            last_name="Nabukeera",
+            last_name="Wanjiku",
         )
         BuyerProfile.objects.create(
             user=buyer,
-            business_name="Kampala Fresh Markets Ltd",
+            business_name="Nairobi Fresh Markets Ltd",
             business_type="Wholesale",
-            location="Kampala, Uganda",
-            mobile_money_number="+256700123456",
+            location="Nairobi, Kenya",
+            mobile_money_number="+254700123456",
             onboarding_complete=True,
         )
         driver = User.objects.create_user(

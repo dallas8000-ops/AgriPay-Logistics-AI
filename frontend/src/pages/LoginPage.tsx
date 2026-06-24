@@ -82,10 +82,11 @@ export default function LoginPage() {
           New here? <Link to="/register">Create account</Link>
         </p>
         <details className="demo-hint">
-          <summary>Demo accounts</summary>
+          <summary>Demo accounts (Kenya / KES)</summary>
+          <p className="demo-hint-lead">Primary portfolio demo — sign in as the farmer to try invoices and SMS reconcile.</p>
           <ul>
-            <li>james_farmer / demo12345</li>
-            <li>mary_buyer / demo12345</li>
+            <li><strong>james_farmer</strong> / demo12345 — Nakuru farmer, M-Pesa +254</li>
+            <li>mary_buyer / demo12345 — Nairobi buyer</li>
             <li>peter_driver / demo12345</li>
             <li>admin / admin12345</li>
           </ul>

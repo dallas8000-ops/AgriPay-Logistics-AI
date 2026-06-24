@@ -1,28 +1,30 @@
-.honesty-banner {
-  background: var(--warning-bg, #fff8e6);
-  border-bottom: 1px solid var(--warning-border, #f0d78c);
-  color: var(--text);
-  font-size: 0.8rem;
-  padding: 0.65rem 1rem;
-  line-height: 1.45;
+.honesty-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  padding: 0.4rem 0.75rem 0.55rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 
-.honesty-banner strong {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 0.82rem;
+.honesty-footer-link {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.honesty-banner ul {
-  margin: 0;
-  padding-left: 1.1rem;
+.honesty-footer-link:hover {
+  color: var(--primary);
 }
 
-.honesty-banner li + li {
-  margin-top: 0.2rem;
+.honesty-footer-sep {
+  opacity: 0.45;
 }
 
-[data-theme='dark'] .honesty-banner {
-  --warning-bg: #2a2418;
-  --warning-border: #5c4a20;
+.honesty-footer-hint {
+  opacity: 0.85;
 }

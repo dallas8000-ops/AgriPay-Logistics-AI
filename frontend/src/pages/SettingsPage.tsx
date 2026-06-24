@@ -90,14 +90,29 @@ export default function SettingsPage() {
         </label>
       </div>
 
-      {caps && caps.warnings.length > 0 && (
-        <div className="card" style={{ marginTop: '1rem', fontSize: '0.82rem' }}>
-          <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>What this deployment supports</h3>
-          <ul style={{ margin: 0, paddingLeft: '1.1rem', color: 'var(--text-muted)' }}>
-            <li>{caps.collection.personal_transfer.description}</li>
-            <li>{caps.collection.sms_reconciliation.description}</li>
-            <li>{caps.collection.merchant_api.description}</li>
+      {caps && (
+        <div className="card" id="integrations" style={{ marginTop: '1rem', fontSize: '0.82rem' }}>
+          <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>Integration status</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
+            Live on this server vs optional add-ons. Core collection (personal transfer + SMS reconcile) works without merchant accounts.
+          </p>
+          <ul style={{ margin: '0 0 0.75rem', paddingLeft: '1.1rem', color: 'var(--text-muted)' }}>
+            <li>Personal transfer: {caps.collection.personal_transfer.status}</li>
+            <li>SMS reconciliation: {caps.collection.sms_reconciliation.status}</li>
+            <li>MTN MoMo API: {caps.collection.merchant_api.providers.mtn_momo}</li>
+            <li>Stripe cards: {caps.collection.stripe.status}</li>
+            <li>Flutterwave: {caps.collection.flutterwave?.status ?? 'not_configured'} (optional)</li>
           </ul>
+          {caps.warnings.length > 0 && (
+            <>
+              <h4 style={{ fontSize: '0.88rem', marginBottom: '0.35rem' }}>Optional channels</h4>
+              <ul style={{ margin: 0, paddingLeft: '1.1rem', color: 'var(--text-muted)' }}>
+                {caps.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 
