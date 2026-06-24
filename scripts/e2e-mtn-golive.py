@@ -43,19 +43,19 @@ EVIDENCE_DIR = SCRIPTS / "golive-evidence"
 API = os.environ.get("BURN_TEST_API", "http://127.0.0.1:8000")
 
 # ---------------------------------------------------------------------------
-# CONFIG — paste MTN's reserved sandbox test numbers from:
-#   https://momodeveloper.mtn.com/api-documentation/testing/
-#
-# Set the MSISDN for each outcome you want to demonstrate. Leave a value as
-# "" to skip that case. The "success" case can use the canonical sandbox
-# number 256772123456 (verified in e2e-mtn-momo.py); pending/failed REQUIRE
-# the specific reserved numbers from the testing page above — without them the
-# sandbox returns SUCCESSFUL for everything and those cases cannot be shown.
+# RequestToPay sandbox MSISDNs (Documentation > Sandbox Use Cases):
+#   RequestToPayPayerFailed    -> 46733123450  -> app: failed
+#   RequestToPayPayerRejected  -> 46733123451  -> app: failed (REJECTED)
+#   RequestToPayPayerExpired   -> 46733123452  -> app: failed (EXPIRED)
+#   RequestToPayPayerOngoing   -> 46733123453  -> app: processing
+#   RequestToPayPayerDelayed   -> 46733123454  -> app: processing
+# Any other MSISDN in sandbox returns SUCCESSFUL — use 256772123456 for success.
+# Override via MTN_TEST_SUCCESS / MTN_TEST_PENDING / MTN_TEST_FAILED env vars.
 # ---------------------------------------------------------------------------
 TEST_NUMBERS: dict[str, str] = {
     "success": os.environ.get("MTN_TEST_SUCCESS", "256772123456"),
-    "pending": os.environ.get("MTN_TEST_PENDING", ""),   # paste reserved PENDING number
-    "failed": os.environ.get("MTN_TEST_FAILED", ""),    # paste reserved FAILED/REJECTED number
+    "pending": os.environ.get("MTN_TEST_PENDING", "46733123453"),  # RequestToPayPayerOngoing
+    "failed": os.environ.get("MTN_TEST_FAILED", "46733123450"),    # RequestToPayPayerFailed
 }
 
 # Expected terminal payment.status (your app's normalized status) per case.

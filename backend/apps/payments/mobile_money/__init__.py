@@ -233,7 +233,7 @@ class MobileMoneyService:
     @staticmethod
     def _apply_provider_status(payment, provider_status: str) -> None:
         success_states = {"SUCCESSFUL", "TS", "SUCCESS", "COMPLETED"}
-        fail_states = {"FAILED", "TF", "FAILURE", "CANCELLED", "EXPIRED"}
+        fail_states = {"FAILED", "TF", "FAILURE", "CANCELLED", "EXPIRED", "REJECTED"}
 
         normalized = (provider_status or "").upper()
         if normalized in success_states:
