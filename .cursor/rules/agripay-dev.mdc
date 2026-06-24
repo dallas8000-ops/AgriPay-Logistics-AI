@@ -1,0 +1,24 @@
+---
+description: Verify AgriPay dev servers before opening or assuming the local app is running
+alwaysApply: true
+---
+
+# AgriPay local dev verification
+
+When the user asks to open, run, or check the AgriPay app locally:
+
+1. **Never** open bare `http://localhost:5173`, `http://localhost:5174`, or assume a previous dev server is still running.
+2. **Always** run `.\scripts\verify-dev-app.ps1` first. It checks:
+   - HTTP response title is `AgriPay Logistics AI`
+   - The process on the port belongs to this repo (`AgriPay Logistics AI`)
+   - Backend `/health/` responds on `127.0.0.1:8000`
+3. If verify fails, run `.\scripts\dev.ps1` (starts servers and waits until verified).
+4. Only open the browser with `.\scripts\open-app.ps1` (opens the **frontend** at `http://127.0.0.1:5174/`).
+5. Do **not** open `http://127.0.0.1:8000/api` in the browser — that is the JSON API backend, not the web app.
+6. Do **not** report the app as running based on old terminal output alone — re-run verify every time.
+
+Canonical URLs (from `scripts/app-dev.json`):
+- Frontend: `http://127.0.0.1:5174/`
+- Backend: `http://127.0.0.1:8000/`
+
+Another project on this machine (`EnPowerCommand`) also uses Vite; `localhost` can route to the wrong app via IPv6.

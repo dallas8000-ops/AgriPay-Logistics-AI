@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "providers": {
+    "railway": {
+      "name": "Railway"
+    }
+  },
+  "resources": {
+    "agripay-db": {
+      "name": "agripay-db",
+      "providerName": "Railway",
+      "serviceId": "postgres"
+    },
+    "railway-hosting": {
+      "name": "railway-hosting",
+      "providerName": "Railway",
+      "serviceId": "hosting"
+    }
+  }
+}

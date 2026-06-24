@@ -1,0 +1,15 @@
+{
+  "projectName": "AgriPay Logistics AI",
+  "projectPathMarker": "AgriPay Logistics AI",
+  "frontend": {
+    "host": "127.0.0.1",
+    "port": 5174,
+    "expectedTitle": "AgriPay Logistics AI",
+    "processMarker": "AgriPay Logistics AI\\frontend"
+  },
+  "backend": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "healthPath": "/health/"
+  }
+}

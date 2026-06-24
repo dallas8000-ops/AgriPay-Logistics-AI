@@ -1,0 +1,101 @@
+import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { COUNTRIES } from '../lib/api';
+
+export default function SettingsPage() {
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const country = user?.country ? COUNTRIES[user.country as keyof typeof COUNTRIES] : null;
+  const [smsAlerts, setSmsAlerts] = useState(true);
+  const [whatsappAlerts, setWhatsappAlerts] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState<{ prompt: () => Promise<void> } | null>(null);
+
+  useEffect(() => {
+    setSmsAlerts(localStorage.getItem('notify_sms') !== 'false');
+    setWhatsappAlerts(localStorage.getItem('notify_whatsapp') !== 'false');
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as unknown as { prompt: () => Promise<void> });
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const togglePref = (key: string, value: boolean, setter: (v: boolean) => void) => {
+    setter(value);
+    localStorage.setItem(key, String(value));
+  };
+
+  const installApp = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      setDeferredPrompt(null);
+    }
+  };
+
+  return (
+    <div className="page">
+      <h1 className="page-title">Settings</h1>
+      <div className="card">
+        <div className="list-item">
+          <span>Account</span>
+          <strong>{user?.username}</strong>
+        </div>
+        <div className="list-item">
+          <span>Role</span>
+          <strong>{user?.role}</strong>
+        </div>
+        <div className="list-item">
+          <span>Country</span>
+          <strong>{country ? `${country.flag} ${country.name}` : '—'}</strong>
+        </div>
+        <div className="list-item">
+          <span>Currency</span>
+          <strong>{user?.currency}</strong>
+        </div>
+        <div className="list-item">
+          <span>Theme</span>
+          <button className="btn btn-secondary" onClick={toggleTheme}>
+            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1rem' }}>
+        <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem' }}>Notification Preferences</h3>
+        <label className="list-item" style={{ cursor: 'pointer' }}>
+          <span>📱 SMS alerts</span>
+          <input
+            type="checkbox"
+            checked={smsAlerts}
+            onChange={(e) => togglePref('notify_sms', e.target.checked, setSmsAlerts)}
+          />
+        </label>
+        <label className="list-item" style={{ cursor: 'pointer' }}>
+          <span>💬 WhatsApp alerts</span>
+          <input
+            type="checkbox"
+            checked={whatsappAlerts}
+            onChange={(e) => togglePref('notify_whatsapp', e.target.checked, setWhatsappAlerts)}
+          />
+        </label>
+      </div>
+
+      {deferredPrompt && (
+        <button className="btn btn-primary btn-block" style={{ marginTop: '1rem' }} onClick={installApp}>
+          📲 Install AgriPay App
+        </button>
+      )}
+
+      <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+        Offline mode caches listings and queues actions when you lose connection.
+      </p>
+
+      <button className="btn btn-secondary btn-block" style={{ marginTop: '1.5rem' }} onClick={logout}>
+        Sign Out
+      </button>
+    </div>
+  );
+}

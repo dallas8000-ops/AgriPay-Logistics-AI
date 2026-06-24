@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "project": {
+    "initializedAt": "2026-06-24T00:23:33.403Z",
+    "merchantDisplayName": null,
+    "merchantId": "acct_1TVQpaRxznXvj6jh",
+    "projectId": "project_61Uv2YfsJDMNM1T1M16UeomwTsSQVKVYS6y4Jl6zI4tc",
+    "projectName": "AgriPay Logistics AI"
+  },
+  "providers": {
+    "railway": {
+      "accountRequestId": "facctrq_61Uv2cC2As7sMjdYv16UeomwTsSQVKVYS6y4Jl6zI4zg",
+      "configuration": {},
+      "linkedAt": "2026-06-24T00:27:14.054Z",
+      "providerId": "prvdr_61UK2uWsoydL7tUBp57Fg",
+      "providerName": "Railway",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-24T00:27:14.053Z",
+      "status": "complete"
+    }
+  },
+  "resources": {
+    "agripay-db": {
+      "configuration": {},
+      "createdAt": "2026-06-24T00:36:51.901Z",
+      "lastRevealedAt": "2026-06-24T00:40:08.461Z",
+      "lastStatus": "complete",
+      "name": "agripay-db",
+      "providerId": "prvdr_61UK2uWsoydL7tUBp57Fg",
+      "providerName": "Railway",
+      "resourceId": "fres_61Uv2lEDkxKuFkkd316UeomwTsSQVKVYS6y4Jl6zI6Su",
+      "serviceId": "postgres"
+    },
+    "railway-hosting": {
+      "configuration": {
+        "repo": "docker/welcome-to-docker"
+      },
+      "createdAt": "2026-06-24T00:37:39.673Z",
+      "lastRevealedAt": "2026-06-24T00:37:39.981Z",
+      "lastStatus": "complete",
+      "name": "railway-hosting",
+      "providerId": "prvdr_61UK2uWsoydL7tUBp57Fg",
+      "providerName": "Railway",
+      "resourceId": "fres_61Uv2mHtn0OLYXUiO16UeomwTsSQVKVYS6y4Jl6zIMuG",
+      "serviceId": "hosting"
+    }
+  }
+}
