@@ -10,6 +10,65 @@ SECRET_KEY = config("SECRET_KEY", default="dev-only-change-in-production")
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 
+# --- Production hardening -------------------------------------------------
+# Refuse to boot a production process that is still using the insecure dev
+# defaults. This fails fast on deploy instead of silently shipping a secret
+# everyone can read or a debug page that leaks tracebacks.
+if not DEBUG:
+    if SECRET_KEY == "dev-only-change-in-production":
+        raise RuntimeError(
+            "SECRET_KEY is still the development default. Set a strong, unique "
+            "SECRET_KEY in the environment before deploying."
+        )
+
+# Railway (and most PaaS) terminate TLS at an edge proxy and reach the app over
+# HTTP internally. Trust the forwarded-proto header so Django knows the original
+# request was HTTPS, and add the platform's hostnames to ALLOWED_HOSTS.
+_on_railway = bool(
+    config("RAILWAY_ENVIRONMENT", default="")
+    or config("RAILWAY_PUBLIC_DOMAIN", default="")
+    or config("RAILWAY_SERVICE_ID", default="")
+)
+_railway_domain = config("RAILWAY_PUBLIC_DOMAIN", default="").strip()
+if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_railway_domain)
+if _on_railway:
+    for _host in (".railway.app", ".railway.internal"):
+        if _host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(_host)
+
+# CSRF trusted origins must be full scheme://host entries (Django 4+).
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+if _railway_domain:
+    _origin = f"https://{_railway_domain}"
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [_origin]
+
+# Apply transport-security settings whenever we are not in local debug. Money
+# moves through this app, so cookies must be HTTPS-only and traffic redirected
+# to TLS.
+_secure = config("SECURE_SSL", default=not DEBUG, cast=bool)
+if _secure:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    # The /api/.../health endpoint is exempt from the HTTPS redirect so internal
+    # healthchecks (which arrive over HTTP) get a 200, not a 301.
+    SECURE_REDIRECT_EXEMPT = [r"^api/.*/health/?$", r"^health/?$"]
+
+# Webhook source-IP allowlists. Mobile-money providers do not sign callbacks,
+# so restricting to their published IP ranges is a primary defense. Comma-
+# separated CIDRs or IPs; empty = not enforced (see webhook_security.py).
+MPESA_WEBHOOK_IPS = config("MPESA_WEBHOOK_IPS", default="")
+MTN_MOMO_WEBHOOK_IPS = config("MTN_MOMO_WEBHOOK_IPS", default="")
+# -------------------------------------------------------------------------
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

@@ -10,6 +10,7 @@ from .helpers import complete_payment
 from .models import Payment
 from .serializers import PaymentSerializer
 from .services import MobileMoneyService, StripeService
+from .webhook_security import already_processed, constant_time_equal, ip_allowed
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -86,10 +87,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def confirm(self, request, pk=None):
         payment = self.get_object()
         if payment.provider == Payment.Provider.STRIPE:
-            if (payment.metadata or {}).get("integration_mode") == "simulated":
-                complete_payment(payment)
-            else:
-                complete_payment(payment)
+            complete_payment(payment)
             return Response(PaymentSerializer(payment).data)
 
         mode = (payment.metadata or {}).get("integration_mode", "simulated")
@@ -194,7 +192,15 @@ def stripe_webhook(request):
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def mtn_momo_webhook(request):
-    """MTN MoMo collection callback (configure X-Callback-Url in requestToPay)."""
+    """MTN MoMo collection callback.
+
+    MTN does not sign callbacks, so the request body is NOT trusted. We only use
+    it to learn which reference changed, then re-confirm the real status by
+    querying MTN's own transaction-status API before completing anything.
+    """
+    if not ip_allowed(request, "MTN_MOMO_WEBHOOK_IPS"):
+        return Response({"error": "Forbidden"}, status=403)
+
     ref = request.headers.get("X-Reference-Id") or request.data.get("referenceId")
     if not ref:
         return Response({"received": True})
@@ -205,7 +211,23 @@ def mtn_momo_webhook(request):
     if not payment:
         return Response({"received": True})
 
-    provider_status = request.data.get("status", "SUCCESSFUL")
+    if already_processed(payment):
+        return Response({"received": True})
+
+    # Re-confirm against MTN rather than trusting request body status.
+    from apps.payments.mobile_money.mtn import MTNMoMoClient
+
+    client = MTNMoMoClient()
+    if client.is_configured():
+        try:
+            result = client.get_transaction_status(ref)
+            provider_status = (result or {}).get("status", "")
+        except Exception:
+            return Response({"received": True})
+    else:
+        # No credentials: cannot confirm, so do not complete. Fail closed.
+        return Response({"received": True})
+
     MobileMoneyService._apply_provider_status(payment, provider_status)
     if payment.status == Payment.Status.COMPLETED:
         complete_payment(payment)
@@ -216,7 +238,16 @@ def mtn_momo_webhook(request):
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def mpesa_webhook(request):
-    """Daraja STK callback."""
+    """Daraja STK callback.
+
+    Safaricom does not sign callbacks; the documented defense is to restrict to
+    Safaricom's published source IPs (set MPESA_WEBHOOK_IPS) and treat the body
+    as advisory. We additionally guard idempotency so a replayed callback cannot
+    re-trigger fulfilment.
+    """
+    if not ip_allowed(request, "MPESA_WEBHOOK_IPS"):
+        return Response({"error": "Forbidden"}, status=403)
+
     body = request.data.get("Body", {}).get("stkCallback", {})
     checkout_id = body.get("CheckoutRequestID")
     result_code = body.get("ResultCode")
@@ -226,6 +257,9 @@ def mpesa_webhook(request):
     try:
         payment = Payment.objects.get(external_reference=checkout_id)
     except Payment.DoesNotExist:
+        return Response({"received": True})
+
+    if already_processed(payment):
         return Response({"received": True})
 
     if result_code == 0:
@@ -257,6 +291,9 @@ def flutterwave_webhook(request):
 
     payment = Payment.objects.filter(external_reference=tx_ref).first()
     if not payment:
+        return Response({"received": True})
+
+    if already_processed(payment):
         return Response({"received": True})
 
     if status_value == "successful":

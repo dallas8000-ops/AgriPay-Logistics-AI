@@ -112,7 +112,11 @@ class FlutterwaveClient:
         return f"{prefix}-{uuid.uuid4().hex[:12].upper()}"
 
     def webhook_valid(self, signature: str) -> bool:
+        import hmac
+
         secret = settings.FLUTTERWAVE_WEBHOOK_SECRET
         if not secret:
             return settings.DEBUG
-        return signature == secret
+        if not signature:
+            return False
+        return hmac.compare_digest(str(signature), str(secret))
