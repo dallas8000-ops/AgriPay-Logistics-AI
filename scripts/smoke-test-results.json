@@ -1,0 +1,109 @@
+{
+  "ran_at": "2026-06-24T04:13:21.606631+00:00",
+  "api": "http://127.0.0.1:8000",
+  "frontend": "http://127.0.0.1:5174",
+  "pass": true,
+  "summary": {
+    "pass": 16,
+    "live": 0,
+    "fail": 0
+  },
+  "results": [
+    {
+      "phase": "infra",
+      "test": "backend_health",
+      "status": "PASS",
+      "detail": "db=connected"
+    },
+    {
+      "phase": "infra",
+      "test": "frontend",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "phase": "infra",
+      "test": "capabilities",
+      "status": "PASS",
+      "detail": "ai_pricing=live_market personal=operational"
+    },
+    {
+      "phase": "infra",
+      "test": "backend_code_fresh",
+      "status": "PASS",
+      "detail": "pricing API serves live_market"
+    },
+    {
+      "phase": "auth",
+      "test": "farmer_login",
+      "status": "PASS",
+      "detail": "james_farmer JWT"
+    },
+    {
+      "phase": "auth",
+      "test": "buyer_login",
+      "status": "PASS",
+      "detail": "mary_buyer JWT"
+    },
+    {
+      "phase": "pricing",
+      "test": "ug_maize_live_market",
+      "status": "PASS",
+      "detail": "unit=1153.51 UGX market=Biira millers market"
+    },
+    {
+      "phase": "pricing",
+      "test": "ke_maize_live_market",
+      "status": "PASS",
+      "detail": "unit=55.2 KES"
+    },
+    {
+      "phase": "pricing",
+      "test": "market_overview",
+      "status": "PASS",
+      "detail": "countries=KE,RW,TZ,UG"
+    },
+    {
+      "phase": "invoices",
+      "test": "create",
+      "status": "PASS",
+      "detail": "ref=INV-11"
+    },
+    {
+      "phase": "invoices",
+      "test": "public_pay",
+      "status": "PASS",
+      "detail": "amount=25000.00 UGX"
+    },
+    {
+      "phase": "invoices",
+      "test": "sms_parse",
+      "status": "PASS",
+      "detail": "ref matched confidence=0.95"
+    },
+    {
+      "phase": "invoices",
+      "test": "csv_export",
+      "status": "PASS",
+      "detail": "1174 bytes"
+    },
+    {
+      "phase": "marketplace",
+      "test": "listings",
+      "status": "PASS",
+      "detail": "count=0"
+    },
+    {
+      "phase": "marketplace",
+      "test": "orders",
+      "status": "PASS",
+      "detail": "count=12"
+    },
+    {
+      "phase": "unit",
+      "test": "django_tests",
+      "status": "PASS",
+      "detail": "12 tests OK"
+    }
+  ]
+}
