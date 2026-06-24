@@ -21,6 +21,7 @@ jobs:
       - run: echo "USE_SQLITE=True" >> .env
       - run: python manage.py check
       - run: python manage.py migrate
+      - run: SECRET_KEY=ci-test-secret DEBUG=True USE_SQLITE=True python -m pytest -q
       - run: python manage.py seed_demo
 
   frontend:
