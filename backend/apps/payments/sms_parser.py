@@ -1,4 +1,8 @@
-"""Parse East Africa mobile money SMS confirmation texts."""
+"""Parse East Africa mobile money SMS confirmation texts.
+
+Regex-based extraction — handles common formats, not every provider variant.
+Long-tail SMS drift will miss; treat confidence scores as hints, not guarantees.
+"""
 
 import re
 from dataclasses import dataclass
@@ -34,6 +38,11 @@ CURRENCY_ALIASES = {
 
 ORDER_REF_PATTERN = re.compile(r"\b(AGR|ORDER|INV)[- ]?(\d+)\b", re.I)
 
+# Real-world samples used in tests — formats drift by country and OS version.
+MPESA_MARKERS = ("mpesa", "m-pesa", "m pesa")
+MTN_MARKERS = ("mtn", "momo", "mobile money")
+AIRTEL_MARKERS = ("airtel", "airtel money")
+
 
 def _amount_from_match(groups: tuple) -> Decimal | None:
     for g in groups:
@@ -47,8 +56,161 @@ def _amount_from_match(groups: tuple) -> Decimal | None:
 
 
 def _normalize_phone(value: str) -> str:
-    digits = re.sub(r"\D", "", value or "")
-    return digits
+    return re.sub(r"\D", "", value or "")
+
+
+def _is_mpesa_sms(lower: str) -> bool:
+    if any(m in lower for m in MPESA_MARKERS):
+        return True
+    # Safaricom: "ABCD1234 Confirmed. Ksh500.00 received from..."
+    if "confirmed" in lower and ("ksh" in lower or "kes" in lower):
+        return True
+    return False
+
+
+def _is_mtn_sms(lower: str) -> bool:
+    return any(m in lower for m in MTN_MARKERS) or "y'ello" in lower or "yello" in lower
+
+
+def _is_airtel_sms(lower: str) -> bool:
+    return any(m in lower for m in AIRTEL_MARKERS)
+
+
+def _parse_mpesa(raw: str, lower: str) -> tuple[str, str, Decimal | None, str, str, float]:
+    provider = "mpesa"
+    currency = "KES" if "ksh" in lower or "kes" in lower else ""
+    if "tzs" in lower:
+        currency = "TZS"
+    amount: Decimal | None = None
+    txn_reference = ""
+    payer_phone = ""
+    confidence = 0.35
+
+    amount_patterns = [
+        r"(?:confirmed\.?\s*)?(?:ksh|kes)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+        r"(?:ksh|kes)[\s.]*([\d,]+(?:\.\d{1,2})?)\s+received",
+        r"received\s+(?:ksh|kes)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+        r"you have received\s+(?:ksh|kes)\s*([\d,]+(?:\.\d{1,2})?)",
+        r"(?:tzs)\s*([\d,]+(?:\.\d{1,2})?)\s+received",
+    ]
+    for pattern in amount_patterns:
+        amount_match = re.search(pattern, raw, re.I)
+        if amount_match:
+            amount = _amount_from_match(amount_match.groups())
+            confidence += 0.25
+            break
+
+    txn_match = re.search(
+        r"(?:confirmation code|transaction id|receipt no\.?)\s+([A-Z0-9]{6,12})",
+        raw,
+        re.I,
+    ) or re.search(r"^([A-Z0-9]{6,10})\s+confirmed", raw, re.I)
+    if txn_match:
+        txn_reference = txn_match.group(1)
+        confidence += 0.15
+
+    phone_match = re.search(
+        r"from\s+(?:\d{9,12}|[A-Z\s]+?\s+)(\d{9,12})",
+        raw,
+        re.I,
+    ) or re.search(r"from\s+(\d{9,12})", raw, re.I)
+    if phone_match:
+        payer_phone = _normalize_phone(phone_match.group(1))
+        confidence += 0.1
+
+    return provider, currency, amount, txn_reference, payer_phone, confidence
+
+
+def _parse_mtn(raw: str, lower: str) -> tuple[str, str, Decimal | None, str, str, float]:
+    provider = "mtn_momo"
+    currency = ""
+    if "ugx" in lower:
+        currency = "UGX"
+    elif "rwf" in lower or "frw" in lower:
+        currency = "RWF"
+    elif "tzs" in lower:
+        currency = "TZS"
+    amount: Decimal | None = None
+    txn_reference = ""
+    payer_phone = ""
+    confidence = 0.35
+
+    amount_patterns = [
+        r"(?:received|sent|deposited|credited)\s+(?:ugx|rwf|frw|tzs)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+        r"(?:ugx|rwf|frw|tzs)[\s.]*([\d,]+(?:\.\d{1,2})?)\s+(?:has been )?received",
+        r"you have received\s+(?:ugx|rwf|frw|tzs)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+        r"(UGX|RWF|FRW|TZS)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+    ]
+    for pattern in amount_patterns:
+        amount_match = re.search(pattern, raw, re.I)
+        if amount_match:
+            groups = amount_match.groups()
+            if groups[0] and groups[0].upper() in CURRENCY_ALIASES and len(groups) > 1:
+                currency = CURRENCY_ALIASES[groups[0].upper()]
+                amount = _amount_from_match((groups[1],))
+            else:
+                amount = _amount_from_match(groups)
+            confidence += 0.25
+            break
+
+    txn_match = re.search(
+        r"(?:transaction id|financial transaction id|txn|trans id|ref(?:erence)?)"
+        r"[:\s#]*([A-Z0-9]{6,20})",
+        raw,
+        re.I,
+    )
+    if txn_match:
+        txn_reference = txn_match.group(1)
+        confidence += 0.1
+
+    phone_match = re.search(r"from\s+(\d{9,12})", raw, re.I)
+    if phone_match:
+        payer_phone = _normalize_phone(phone_match.group(1))
+        confidence += 0.1
+
+    return provider, currency, amount, txn_reference, payer_phone, confidence
+
+
+def _parse_airtel(raw: str, lower: str) -> tuple[str, str, Decimal | None, str, str, float]:
+    provider = "airtel_money"
+    currency = ""
+    amount: Decimal | None = None
+    txn_reference = ""
+    payer_phone = ""
+    confidence = 0.35
+
+    for code in ("UGX", "KES", "TZS", "RWF"):
+        if code.lower() in lower:
+            currency = code
+            break
+
+    amount_patterns = [
+        r"(?:received|sent|credited)\s+(?:ugx|kes|tzs|rwf)?[\s.]*([\d,]+(?:\.\d{1,2})?)",
+        r"(?:ugx|kes|tzs|rwf)\s*([\d,]+(?:\.\d{1,2})?)\s+has been received",
+        r"you have received\s+(?:ugx|kes|tzs|rwf)[\s.]*([\d,]+(?:\.\d{1,2})?)",
+    ]
+    for pattern in amount_patterns:
+        amount_match = re.search(pattern, raw, re.I)
+        if amount_match:
+            amount = _amount_from_match(amount_match.groups())
+            confidence += 0.2
+            break
+
+    txn_match = re.search(
+        r"(?:txn|transaction|financial transaction|ref(?:erence)?)[:\s#]*([A-Z0-9]{6,20})",
+        raw,
+        re.I,
+    )
+    if txn_match:
+        txn_reference = txn_match.group(1)
+        confidence += 0.1
+
+    phone_match = re.search(r"from\s+(\d{9,12})", raw, re.I)
+    if phone_match:
+        payer_phone = _normalize_phone(phone_match.group(1))
+        confidence += 0.1
+
+    return provider, currency, amount, txn_reference, payer_phone, confidence
 
 
 def parse_mobile_money_sms(text: str) -> ParsedSmsPayment:
@@ -62,74 +224,13 @@ def parse_mobile_money_sms(text: str) -> ParsedSmsPayment:
     payee_phone = ""
     confidence = 0.35
 
-  # M-Pesa Kenya / Tanzania patterns
-    if "mpesa" in lower or "m-pesa" in lower or "confirmed" in lower and "ksh" in lower:
-        provider = "mpesa"
-        currency = "KES"
-        amount_match = re.search(
-            r"(?:confirmed\.?\s*)?(?:ksh|kes)[\s.]*([\d,]+(?:\.\d{1,2})?)",
-            raw,
-            re.I,
-        ) or re.search(r"received\s+(?:ksh|kes)[\s.]*([\d,]+(?:\.\d{1,2})?)", raw, re.I)
-        if amount_match:
-            amount = _amount_from_match(amount_match.groups())
-            confidence += 0.25
-        txn_match = re.search(r"confirmation code\s+([A-Z0-9]{8,12})", raw, re.I)
-        if txn_match:
-            txn_reference = txn_match.group(1)
-            confidence += 0.15
-        phone_match = re.search(r"from\s+(\d{9,12})", raw, re.I)
-        if phone_match:
-            payer_phone = _normalize_phone(phone_match.group(1))
-            confidence += 0.1
+    if _is_mpesa_sms(lower):
+        provider, currency, amount, txn_reference, payer_phone, confidence = _parse_mpesa(raw, lower)
+    elif _is_mtn_sms(lower):
+        provider, currency, amount, txn_reference, payer_phone, confidence = _parse_mtn(raw, lower)
+    elif _is_airtel_sms(lower):
+        provider, currency, amount, txn_reference, payer_phone, confidence = _parse_airtel(raw, lower)
 
-    # MTN MoMo Uganda / Rwanda
-    elif "mtn" in lower or "mobile money" in lower or "momo" in lower:
-        provider = "mtn_momo"
-        if "ugx" in lower:
-            currency = "UGX"
-        elif "rwf" in lower or "frw" in lower:
-            currency = "RWF"
-        amount_match = re.search(
-            r"(?:received|sent|deposited|withdrawn)\s+(?:ugx|rwf|frw)?[\s.]*([\d,]+(?:\.\d{1,2})?)",
-            raw,
-            re.I,
-        ) or re.search(r"(UGX|RWF|FRW)[\s.]*([\d,]+(?:\.\d{1,2})?)", raw, re.I)
-        if amount_match:
-            groups = amount_match.groups()
-            if groups[0] and groups[0].upper() in CURRENCY_ALIASES and len(groups) > 1:
-                currency = CURRENCY_ALIASES[groups[0].upper()]
-                amount = _amount_from_match((groups[1],))
-            else:
-                amount = _amount_from_match(groups)
-            confidence += 0.25
-        txn_match = re.search(r"(?:id|ref|reference|txn)[:\s#]*([A-Z0-9]{6,20})", raw, re.I)
-        if txn_match:
-            txn_reference = txn_match.group(1)
-            confidence += 0.1
-        phone_match = re.search(r"from\s+(\d{9,12})", raw, re.I)
-        if phone_match:
-            payer_phone = _normalize_phone(phone_match.group(1))
-
-    # Airtel Money
-    elif "airtel" in lower or "airtel money" in lower:
-        provider = "airtel_money"
-        amount_match = re.search(
-            r"(?:received|sent)\s+(?:ugx|kes|tzs|rwf)?[\s.]*([\d,]+(?:\.\d{1,2})?)",
-            raw,
-            re.I,
-        )
-        if amount_match:
-            amount = _amount_from_match(amount_match.groups())
-            confidence += 0.2
-        for code in ("UGX", "KES", "TZS", "RWF"):
-            if code.lower() in lower:
-                currency = code
-        txn_match = re.search(r"(?:txn|transaction|ref)[:\s#]*([A-Z0-9]{6,20})", raw, re.I)
-        if txn_match:
-            txn_reference = txn_match.group(1)
-
-    # Generic amount + currency fallback
     if amount is None:
         generic = re.search(
             r"\b(UGX|KES|TZS|RWF|KSH)[\s.]*([\d,]+(?:\.\d{1,2})?)",
@@ -137,7 +238,9 @@ def parse_mobile_money_sms(text: str) -> ParsedSmsPayment:
             re.I,
         )
         if generic:
-            currency = CURRENCY_ALIASES.get(generic.group(1).upper(), generic.group(1).upper())
+            currency = currency or CURRENCY_ALIASES.get(
+                generic.group(1).upper(), generic.group(1).upper()
+            )
             amount = _amount_from_match((generic.group(2),))
             confidence += 0.1
 

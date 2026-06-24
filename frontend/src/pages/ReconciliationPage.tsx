@@ -73,7 +73,7 @@ export default function ReconciliationPage() {
     <div className="page">
       <PageHeader
         title="Reconcile Payments"
-        subtitle="Paste mobile money SMS confirmations and match them to orders (AGR-…) or invoices (INV-…)."
+        subtitle="Paste confirmation SMS to match payments — you verify your own inbox; we do not read your phone automatically."
       />
 
       {summary && (
@@ -97,6 +97,7 @@ export default function ReconciliationPage() {
         <h3 className="form-card-title">Paste confirmation SMS</h3>
         <p className="page-subtitle" style={{ marginBottom: '0.75rem' }}>
           Copy the text from your MTN, Airtel, or M-Pesa confirmation. Include reference <strong>AGR-…</strong> or <strong>INV-…</strong> if possible.
+          Parser accuracy varies — always confirm amount and payer before marking paid.
         </p>
         <textarea
           value={smsText}
