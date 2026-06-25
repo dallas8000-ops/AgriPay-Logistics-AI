@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 
-import stripe
+import stripe as stripe_sdk
 
 
 def stripe_api_key() -> str:
@@ -14,5 +14,5 @@ def get_stripe():
     key = stripe_api_key()
     if not key:
         raise RuntimeError("STRIPE_SECRET_KEY is not set")
-    stripe.api_key = key
-    return stripe
+    stripe_sdk.api_key = key
+    return stripe_sdk

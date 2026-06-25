@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from config.health import api_root, capabilities_view, health_check
+from stripe_billing.views import webhook as stripe_billing_webhook
 
 urlpatterns = [
     path("health/", health_check, name="health"),
@@ -17,7 +18,8 @@ urlpatterns = [
     path("api/ai/", include("apps.ai_services.urls")),
     path("api/disputes/", include("apps.disputes.urls")),
     path("api/notifications/", include("apps.notifications.urls")),
-    path("stripe/", include("stripe.urls")),
+    path("webhooks/stripe/", stripe_billing_webhook, name="stripe-webhook-root"),
+    path("stripe/", include("stripe_billing.urls")),
 ]
 
 if settings.DEBUG:

@@ -110,7 +110,7 @@ INSTALLED_APPS = [
     "apps.ai_services",
     "apps.disputes",
     "apps.notifications",
-    "stripe",
+    "stripe_billing",
 ]
 
 MIDDLEWARE = [

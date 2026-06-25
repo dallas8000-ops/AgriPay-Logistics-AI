@@ -36,6 +36,7 @@ def api_root(request):
                 "notifications": "/api/notifications/",
                 "capabilities": "/api/system/capabilities/",
                 "health": "/health/",
+                "stripe": "/stripe/",
             },
         }
     )
