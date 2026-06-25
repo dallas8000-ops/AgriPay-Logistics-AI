@@ -17,6 +17,7 @@ urlpatterns = [
     path("api/ai/", include("apps.ai_services.urls")),
     path("api/disputes/", include("apps.disputes.urls")),
     path("api/notifications/", include("apps.notifications.urls")),
+    path("stripe/", include("stripe.urls")),
 ]
 
 if settings.DEBUG:
