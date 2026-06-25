@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; }
+    .grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 2rem; }
+    .tier-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; }
+    .price { font-size: 1.75rem; font-weight: bold; }
+    .trial { color: #059669; font-size: 0.875rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; background: #111; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Choose your plan</h1>
+  <p>Simple, transparent pricing — server-rendered for SEO.</p>
+  <div class="grid">
+    <article class="tier-card">
+      <h2>admin</h2>
+      <p class="price">$12345.00/month</p>
+      <ul><li>Admin</li></ul>
+      <form method="post" action="{% url 'stripe-checkout' %}">
+{% csrf_token %}        <input type="hidden" name="priceId" value="price_1Tm3TKRxznXvj6jh93p0kmhH" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </article>
+    <article class="tier-card">
+      <h2>james_farmer</h2>
+      <p class="price">$12345.00/month</p>
+      <ul><li>Farmer (Mbale</li><li>UG)</li></ul>
+      <form method="post" action="{% url 'stripe-checkout' %}">
+{% csrf_token %}        <input type="hidden" name="priceId" value="price_1Tm3TKRxznXvj6jhheSa4PTn" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </article>
+    <article class="tier-card">
+      <h2>mary_buyer</h2>
+      <p class="price">$12345.00/month</p>
+      <ul><li>Buyer (Kampala</li><li>UG)</li></ul>
+      <form method="post" action="{% url 'stripe-checkout' %}">
+{% csrf_token %}        <input type="hidden" name="priceId" value="price_1Tm3TLRxznXvj6jhqQGmu4rI" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </article>
+    <article class="tier-card">
+      <h2>peter_driver</h2>
+      <p class="price">$12345.00/month</p>
+      <ul><li>Driver</li></ul>
+      <form method="post" action="{% url 'stripe-checkout' %}">
+{% csrf_token %}        <input type="hidden" name="priceId" value="price_1Tm3TLRxznXvj6jhnODaJ4u1" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </article>
+    <article class="tier-card">
+      <h2>grace_vendor</h2>
+      <p class="price">$12345.00/month</p>
+      <ul><li>Vendor</li></ul>
+      <form method="post" action="{% url 'stripe-checkout' %}">
+{% csrf_token %}        <input type="hidden" name="priceId" value="price_1Tm3TMRxznXvj6jhx6792hKl" />
+        <button type="submit">Subscribe</button>
+      </form>
+    </article>
+  </div>
+</body>
+</html>

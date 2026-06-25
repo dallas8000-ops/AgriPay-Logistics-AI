@@ -1,0 +1,7 @@
+{
+  "deployedAt": "2026-06-25T02:57:23.516250+00:00",
+  "platform": "railway",
+  "productionUrl": "http://127.0.0.1:8000",
+  "postgresProvider": null,
+  "readinessScore": 94
+}
