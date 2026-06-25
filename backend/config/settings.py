@@ -33,7 +33,7 @@ _railway_domain = config("RAILWAY_PUBLIC_DOMAIN", default="").strip()
 if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_railway_domain)
 if _on_railway:
-    for _host in (".railway.app", ".railway.internal"):
+    for _host in (".railway.app", ".up.railway.app", "healthcheck.railway.app"):
         if _host not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(_host)
 

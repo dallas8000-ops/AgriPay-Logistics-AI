@@ -54,7 +54,15 @@ The database is too far gone for a light repair. Options:
 - **No production data to keep:** delete the Postgres volume / create a new Postgres plugin, set `DATABASE_URL`, redeploy (clean `migrate`)
 - **Data to keep:** export what you need, then reset Postgres and restore
 
-## Prevent recurrence
+## "Deployment failed during network process"
+
+Railway means the **healthcheck never got HTTP 200** — not a DNS bug.
+
+1. Open the failed deploy → **Deploy Logs** (not only the network summary).
+2. Look for a traceback **before** `starting gunicorn` — usually `migrate` or `repair_accounts_schema` exited.
+3. Ensure **Networking → Generate Domain** is set if the service shows "Unexposed service" (old deploys may still serve traffic).
+4. `ALLOWED_HOSTS` must include `healthcheck.railway.app` (Railway's internal probe hostname).
+
 
 - Set `DATABASE_URL=${{Postgres.DATABASE_URL}}` on the **web service** only; Postgres plugin name must match the reference (`Postgres`)
 - Never `--fake` initial migrations on Railway unless the schema truly matches
