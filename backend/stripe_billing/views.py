@@ -55,7 +55,7 @@ def checkout(request):
     price_id = _post_value(request, "priceId")
     if not price_id:
         return JsonResponse({"error": "priceId required"}, status=400)
-    app_url = os.environ.get("APP_URL", "http://127.0.0.1:8000")
+    app_url = os.environ.get("APP_URL", "https://agripay-api-production.up.railway.app")
     user_id = None
     if getattr(request, "user", None) and request.user.is_authenticated:
         user_id = str(request.user.pk)
@@ -81,7 +81,7 @@ def portal(request):
         customer_id = request.session.get("stripe_customer_id")
     if not customer_id:
         return JsonResponse({"error": "customerId required"}, status=400)
-    app_url = os.environ.get("APP_URL", "http://127.0.0.1:8000")
+    app_url = os.environ.get("APP_URL", "https://agripay-api-production.up.railway.app")
     stripe = get_stripe()
     session = stripe.billing_portal.Session.create(
         customer=customer_id,
