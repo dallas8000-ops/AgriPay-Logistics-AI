@@ -49,7 +49,7 @@ class Command(BaseCommand):
             return
 
         loader = MigrationLoader(connection, ignore_no_migrations=True)
-        state = loader.project_state({("accounts", "0001_initial")})
+        state = loader.project_state([("accounts", "0001_initial")])
         apps = state.apps
 
         user = apps.get_model("accounts", "User")
