@@ -127,6 +127,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[permissions.AllowAny])
     def config(self, request):
+        from .fees import fee_breakdown
+
         modes = MobileMoneyService.provider_modes()
         stripe_mode = "live" if settings.STRIPE_SECRET_KEY else "simulated"
         return Response(
@@ -165,6 +167,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     },
                 ],
                 "currencies": {code: c["currency"] for code, c in settings.SUPPORTED_COUNTRIES.items()},
+                "transaction_fee": fee_breakdown(),
             }
         )
 

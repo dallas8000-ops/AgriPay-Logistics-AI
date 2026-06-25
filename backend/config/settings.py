@@ -67,6 +67,29 @@ if _secure:
 # separated CIDRs or IPs; empty = not enforced (see webhook_security.py).
 MPESA_WEBHOOK_IPS = config("MPESA_WEBHOOK_IPS", default="")
 MTN_MOMO_WEBHOOK_IPS = config("MTN_MOMO_WEBHOOK_IPS", default="")
+
+# --- Subscription billing ---------------------------------------------------
+# Flat fee PER USER per month. Revenue = SUBSCRIPTION_FEE_PER_USER x total
+# active users across all clients. A client with 20 users pays 20 x the fee --
+# more users means more revenue, never a loss.
+SUBSCRIPTION_FEE_PER_USER = config("SUBSCRIPTION_FEE_PER_USER", default="20.00")
+BILLING_CURRENCY = config("BILLING_CURRENCY", default="USD")
+# Where the Flutterwave/Stripe checkout returns the payer after paying.
+BILLING_REDIRECT_URL = config(
+    "BILLING_REDIRECT_URL", default="http://localhost:5174/settings/billing"
+)
+
+# --- Transaction fee (paid by the sender, like Sendwave) --------------------
+# The person initiating a payment pays the rail's transaction fee. This is a
+# PASS-THROUGH cost, not platform revenue, unless you set a markup.
+# TRANSACTION_FEE_FLAT is the rail's per-transaction cost (e.g. MTN's 0.99).
+# TRANSACTION_FEE_MARKUP is YOUR added margin on top -- defaults to 0 because
+# whether you may mark up the rail fee depends on your MTN merchant agreement
+# and local regulation. Confirm those terms before setting this above 0.
+TRANSACTION_FEE_FLAT = config("TRANSACTION_FEE_FLAT", default="0.99")
+TRANSACTION_FEE_MARKUP = config("TRANSACTION_FEE_MARKUP", default="0.00")
+# Toggle whether the fee is added to the sender's total at all.
+TRANSACTION_FEE_ENABLED = config("TRANSACTION_FEE_ENABLED", default=True, cast=bool)
 # -------------------------------------------------------------------------
 
 INSTALLED_APPS = [

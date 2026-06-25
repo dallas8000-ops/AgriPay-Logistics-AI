@@ -33,11 +33,16 @@ def complete_payment(payment: Payment) -> Delivery | None:
         complete_invoice_payment(payment)
         return None
 
-    from apps.notifications.services import notify_payment_completed
-
     if payment.status != Payment.Status.COMPLETED:
         payment.status = Payment.Status.COMPLETED
         payment.save(update_fields=["status"])
+
+    # Subscription payments activate the paying organization.
+    if (payment.metadata or {}).get("kind") == "subscription":
+        _activate_subscription(payment)
+        return None
+
+    from apps.notifications.services import notify_payment_completed
 
     if not payment.order_id:
         return None
@@ -55,3 +60,22 @@ def complete_payment(payment: Payment) -> Delivery | None:
     )
     notify_payment_completed(payment)
     return delivery
+
+
+def _activate_subscription(payment: Payment) -> None:
+    """Activate the organization billed by this subscription payment."""
+    import datetime
+
+    from apps.accounts.models import Organization
+
+    org_id = (payment.metadata or {}).get("organization_id")
+    if not org_id:
+        return
+    try:
+        org = Organization.objects.get(pk=org_id)
+    except Organization.DoesNotExist:
+        return
+    org.billing_status = Organization.BillingStatus.ACTIVE
+    org.last_paid_at = payment.created_at
+    org.paid_through = datetime.date.today() + datetime.timedelta(days=30)
+    org.save(update_fields=["billing_status", "last_paid_at", "paid_through"])
