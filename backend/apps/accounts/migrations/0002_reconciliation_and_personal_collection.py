@@ -3,16 +3,36 @@
 from django.db import migrations, models
 
 
+def _ensure_accounts_profile_tables(apps, schema_editor):
+    """Repair DBs where 0001_initial is recorded but profile tables were never created."""
+    connection = schema_editor.connection
+    table_names = set(connection.introspection.table_names())
+    for model_name in ("BuyerProfile", "DriverProfile", "FarmerProfile", "VendorProfile"):
+        model = apps.get_model("accounts", model_name)
+        table = model._meta.db_table
+        if table not in table_names:
+            schema_editor.create_model(model)
+            table_names.add(table)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
+        migrations.RunPython(_ensure_accounts_profile_tables, migrations.RunPython.noop),
         migrations.AddField(
-            model_name='farmerprofile',
-            name='collection_tier',
-            field=models.CharField(choices=[('personal', 'Personal number only (no merchant account)'), ('merchant', 'Registered business / merchant account')], default='personal', max_length=20),
+            model_name="farmerprofile",
+            name="collection_tier",
+            field=models.CharField(
+                choices=[
+                    ("personal", "Personal number only (no merchant account)"),
+                    ("merchant", "Registered business / merchant account"),
+                ],
+                default="personal",
+                max_length=20,
+            ),
         ),
     ]
