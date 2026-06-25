@@ -20,27 +20,32 @@ Common causes:
 
 ## Fix (one time on Railway)
 
-1. Open **AgriPay-Logistics-AI** service → **Console** (or `railway shell`)
-2. Inspect:
+### Option A — automatic (recommended)
 
-   ```bash
-   python manage.py dbshell
-   ```
+`entrypoint.sh` runs `repair_accounts_schema` before `migrate` on every deploy.
+It is a **no-op** when the schema already matches `0001_initial`; it only repairs
+when profile tables are missing.
 
-   ```sql
-   SELECT name FROM django_migrations WHERE app = 'accounts' ORDER BY name;
-   \dt accounts_*
-   ```
+Push the latest code and redeploy — no Console typing required.
 
-3. Repair drift:
+### Option B — Railway CLI from your PC
 
-   ```bash
-   python manage.py repair_accounts_schema --dry-run
-   python manage.py repair_accounts_schema
-   python manage.py migrate --noinput
-   ```
+```powershell
+cd "C:\Software Projects\AgriPay Logistics AI"
+railway link
+railway run python manage.py repair_accounts_schema
+railway run python manage.py migrate --noinput
+```
 
-4. Redeploy or restart the service.
+### Option C — Railway Console
+
+If the Console accepts input:
+
+```bash
+python manage.py repair_accounts_schema --dry-run
+python manage.py repair_accounts_schema
+python manage.py migrate --noinput
+```
 
 ## If repair command refuses (accounts_user missing)
 
