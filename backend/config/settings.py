@@ -72,7 +72,7 @@ MTN_MOMO_WEBHOOK_IPS = config("MTN_MOMO_WEBHOOK_IPS", default="")
 # Flat fee PER USER per month. Revenue = SUBSCRIPTION_FEE_PER_USER x total
 # active users across all clients. A client with 20 users pays 20 x the fee --
 # more users means more revenue, never a loss.
-SUBSCRIPTION_FEE_PER_USER = config("SUBSCRIPTION_FEE_PER_USER", default="20.00")
+SUBSCRIPTION_FEE_PER_USER = config("SUBSCRIPTION_FEE_PER_USER", default="4.00")
 BILLING_CURRENCY = config("BILLING_CURRENCY", default="USD")
 # Where the Flutterwave/Stripe checkout returns the payer after paying.
 BILLING_REDIRECT_URL = config(
