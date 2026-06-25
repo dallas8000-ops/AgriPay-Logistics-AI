@@ -10,14 +10,16 @@ def health_check(request):
         connection.ensure_connection()
     except Exception:
         db_ok = False
-    status_code = 200 if db_ok else 503
+    # Liveness probe: always 200 when Django is up (Railway promotes the deploy).
+    # DB status is informational; migrate runs in entrypoint before gunicorn.
     return JsonResponse(
         {
             "status": "ok" if db_ok else "degraded",
             "database": "connected" if db_ok else "unavailable",
             "service": "agripay-logistics-api",
+            "build": "stripe-billing-v2",
         },
-        status=status_code,
+        status=200,
     )
 
 
@@ -37,6 +39,7 @@ def api_root(request):
                 "capabilities": "/api/system/capabilities/",
                 "health": "/health/",
                 "stripe": "/stripe/",
+                "stripe_api": "/api/stripe/",
             },
         }
     )

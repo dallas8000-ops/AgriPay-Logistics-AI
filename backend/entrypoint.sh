@@ -1,5 +1,8 @@
 #!/bin/sh
 set -e
+echo "[entrypoint] collectstatic..."
 python manage.py collectstatic --noinput
+echo "[entrypoint] migrate..."
 python manage.py migrate --noinput
-exec gunicorn config.wsgi:application --bind "0.0.0.0:${PORT:-8000}" --workers 2
+echo "[entrypoint] starting gunicorn on port ${PORT:-8000}..."
+exec gunicorn config.wsgi:application --bind "0.0.0.0:${PORT:-8000}" --workers 2 --timeout 120

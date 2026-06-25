@@ -19,6 +19,7 @@ urlpatterns = [
     path("api/disputes/", include("apps.disputes.urls")),
     path("api/notifications/", include("apps.notifications.urls")),
     path("webhooks/stripe/", stripe_billing_webhook, name="stripe-webhook-root"),
+    path("api/stripe/", include("stripe_billing.urls")),
     path("stripe/", include("stripe_billing.urls")),
 ]
 
