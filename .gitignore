@@ -13,6 +13,12 @@ venv/
 staticfiles/
 media/
 
+# Stripe Installer (local vault mirror — never commit)
+.stripe-installer/
+
+# Stripe Installer (local vault mirror — never commit)
+.stripe-installer/
+
 # Stripe Projects (committed: .projects/state.json, .projects/state.local.json)
 
 # IDE

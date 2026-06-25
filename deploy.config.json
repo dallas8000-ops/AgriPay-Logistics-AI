@@ -8,7 +8,7 @@
       "url": ""
     },
     "production": {
-      "url": ""
+      "url": "https://agripay-api-production.up.railway.app"
     }
   },
   "platform": "railway",
@@ -23,5 +23,6 @@
   "backup": {
     "enabled": true,
     "retentionDays": 30
-  }
+  },
+  "healthPath": "/health/"
 }
