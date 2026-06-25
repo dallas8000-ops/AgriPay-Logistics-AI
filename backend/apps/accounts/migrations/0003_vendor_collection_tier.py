@@ -3,16 +3,61 @@
 from django.db import migrations, models
 
 
+def _column_exists(connection, table: str, column: str) -> bool:
+    with connection.cursor() as cursor:
+        description = connection.introspection.get_table_description(cursor, table)
+    return any(col.name == column for col in description)
+
+
+def _database_forwards(apps, schema_editor):
+    """Bootstrap VendorProfile if missing; add collection_tier once."""
+    connection = schema_editor.connection
+    table_names = set(connection.introspection.table_names())
+
+    vendor = apps.get_model("accounts", "VendorProfile")
+    vendor_table = vendor._meta.db_table
+    field = vendor._meta.get_field("collection_tier")
+
+    if vendor_table not in table_names:
+        schema_editor.create_model(vendor)
+        return
+
+    if not _column_exists(connection, vendor_table, "collection_tier"):
+        schema_editor.add_field(vendor, field)
+
+
+def _database_backwards(apps, schema_editor):
+    vendor = apps.get_model("accounts", "VendorProfile")
+    vendor_table = vendor._meta.db_table
+    field = vendor._meta.get_field("collection_tier")
+    if _column_exists(schema_editor.connection, vendor_table, "collection_tier"):
+        schema_editor.remove_field(vendor, field)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_reconciliation_and_personal_collection'),
+        ("accounts", "0002_reconciliation_and_personal_collection"),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='vendorprofile',
-            name='collection_tier',
-            field=models.CharField(choices=[('personal', 'Personal number only (no merchant account)'), ('merchant', 'Registered business / merchant account')], default='personal', max_length=20),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddField(
+                    model_name="vendorprofile",
+                    name="collection_tier",
+                    field=models.CharField(
+                        choices=[
+                            ("personal", "Personal number only (no merchant account)"),
+                            ("merchant", "Registered business / merchant account"),
+                        ],
+                        default="personal",
+                        max_length=20,
+                    ),
+                ),
+            ],
+            database_operations=[
+                migrations.RunPython(_database_forwards, _database_backwards),
+            ],
         ),
     ]
