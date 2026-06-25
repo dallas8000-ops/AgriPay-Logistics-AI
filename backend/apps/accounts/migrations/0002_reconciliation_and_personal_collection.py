@@ -3,44 +3,6 @@
 from django.db import migrations, models
 
 
-def _column_exists(connection, table: str, column: str) -> bool:
-    with connection.cursor() as cursor:
-        description = connection.introspection.get_table_description(cursor, table)
-    return any(col.name == column for col in description)
-
-
-def _database_forwards(apps, schema_editor):
-    """Bootstrap missing profile tables; add collection_tier once on FarmerProfile."""
-    connection = schema_editor.connection
-    table_names = set(connection.introspection.table_names())
-
-    for model_name in ("BuyerProfile", "DriverProfile", "VendorProfile"):
-        model = apps.get_model("accounts", model_name)
-        table = model._meta.db_table
-        if table not in table_names:
-            schema_editor.create_model(model)
-            table_names.add(table)
-
-    farmer = apps.get_model("accounts", "FarmerProfile")
-    farmer_table = farmer._meta.db_table
-    field = farmer._meta.get_field("collection_tier")
-
-    if farmer_table not in table_names:
-        schema_editor.create_model(farmer)
-        return
-
-    if not _column_exists(connection, farmer_table, "collection_tier"):
-        schema_editor.add_field(farmer, field)
-
-
-def _database_backwards(apps, schema_editor):
-    farmer = apps.get_model("accounts", "FarmerProfile")
-    farmer_table = farmer._meta.db_table
-    field = farmer._meta.get_field("collection_tier")
-    if _column_exists(schema_editor.connection, farmer_table, "collection_tier"):
-        schema_editor.remove_field(farmer, field)
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -48,23 +10,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.AddField(
-                    model_name="farmerprofile",
-                    name="collection_tier",
-                    field=models.CharField(
-                        choices=[
-                            ("personal", "Personal number only (no merchant account)"),
-                            ("merchant", "Registered business / merchant account"),
-                        ],
-                        default="personal",
-                        max_length=20,
-                    ),
-                ),
-            ],
-            database_operations=[
-                migrations.RunPython(_database_forwards, _database_backwards),
-            ],
+        migrations.AddField(
+            model_name="farmerprofile",
+            name="collection_tier",
+            field=models.CharField(
+                choices=[
+                    ("personal", "Personal number only (no merchant account)"),
+                    ("merchant", "Registered business / merchant account"),
+                ],
+                default="personal",
+                max_length=20,
+            ),
         ),
     ]
