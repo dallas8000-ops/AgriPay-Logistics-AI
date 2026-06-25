@@ -166,6 +166,11 @@ else:
         import dj_database_url
 
         DATABASES["default"] = dj_database_url.parse(_db_url, conn_max_age=600)
+    elif _on_railway:
+        raise RuntimeError(
+            "DATABASE_URL is not set. In Railway → AgriPay-Logistics-AI → Variables, "
+            "add DATABASE_URL as a reference to your Postgres service, then redeploy."
+        )
 
 AUTH_USER_MODEL = "accounts.User"
 
