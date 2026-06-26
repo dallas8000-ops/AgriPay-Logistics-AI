@@ -36,7 +36,7 @@ A mobile-first East Africa agribusiness platform connecting farmers, market vend
 | M-Pesa | `MPESA_*` vars + `MPESA_CALLBACK_URL` | [Safaricom Daraja](https://developer.safaricom.co.ke/) |
 
 Without credentials, checkout runs in **simulated** mode (clearly labeled in the UI — no fake USSD messages). With credentials, the backend calls real sandbox APIs (`requestToPay`, Airtel collect, M-Pesa STK push) and polls provider status / handles webhooks at `/api/payments/webhook/mtn/` and `/api/payments/webhook/mpesa/`.
-- **DevOps:** Docker, GitHub Actions, deploy-ready for Railway/Render
+- **DevOps:** Docker, GitHub Actions, deploy-ready for Railway
 
 ## Quick Start
 
@@ -158,14 +158,13 @@ Legacy manual scripts (`setup-railway.ps1`, `setup-stripe.ps1`) now delegate to 
 | `GET /api/logistics/` | Delivery tracking |
 | `GET /api/disputes/` | Dispute center |
 
-## Deploy (Railway / Render)
+## Deploy (Railway)
 
 **Railway:** Connect repo — `railway.toml` configures Docker build and `/health/` check.
 
-**Render:** Use `render.yaml` blueprint — provisions PostgreSQL, API, and static frontend.
 
 Set these env vars in production:
-- `DATABASE_URL` (auto on Render/Railway)
+- `DATABASE_URL` (auto-provided by the Railway Postgres plugin)
 - `SECRET_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`
 - `DEBUG=false`
 - Stripe keys (run `scripts/setup-stripe.ps1` locally first)
