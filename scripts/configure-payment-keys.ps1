@@ -39,15 +39,15 @@ Write-Host "  MTN MoMo:    https://momodeveloper.mtn.com/signup" -ForegroundColo
 Write-Host ""
 
 if (-not $FlutterwaveSecret -and -not $MtnSubscriptionKey) {
-    Write-Host "Flutterwave TEST secret key (FLWSECK_TEST-... from Settings > API Keys, Test mode ON):" -ForegroundColor Yellow
-    $FlutterwaveSecret = Read-Host "Paste FLUTTERWAVE_SECRET_KEY (or Enter to skip)"
+    Write-Host "Flutterwave TEST Client Secret (saved here as FLUTTERWAVE_SECRET_KEY; FLWSECK_TEST-... if shown in your dashboard):" -ForegroundColor Yellow
+    $FlutterwaveSecret = Read-Host "Paste Flutterwave Client Secret for FLUTTERWAVE_SECRET_KEY (or Enter to skip)"
 }
 if (-not $FlutterwavePublic -and $FlutterwaveSecret) {
     Write-Host "Flutterwave TEST public key (FLWPUBK_TEST-...):" -ForegroundColor Yellow
     $FlutterwavePublic = Read-Host "Paste FLUTTERWAVE_PUBLIC_KEY (or Enter to skip)"
 }
 if (-not $FlutterwaveWebhook -and $FlutterwaveSecret) {
-    Write-Host "Flutterwave webhook secret hash (Settings > Webhooks, optional for local verify polling):" -ForegroundColor Yellow
+    Write-Host "Flutterwave test webhook hash from Settings > Webhooks (optional for local verify polling; not shown on the API keys page):" -ForegroundColor Yellow
     $FlutterwaveWebhook = Read-Host "Paste FLUTTERWAVE_WEBHOOK_SECRET (or Enter to skip)"
 }
 if (-not $MtnSubscriptionKey -and -not $FlutterwaveSecret) {

@@ -10,7 +10,7 @@ A mobile-first East Africa agribusiness platform connecting farmers, market vend
 |--------|-------------|
 | Onboarding | Role-based profiles for farmer, vendor, buyer, driver |
 | Marketplace | Browse and list produce with local currency |
-| Payments | MTN MoMo, Airtel Money, M-Pesa (live when API creds set; simulated otherwise) + Stripe |
+| Payments | Flutterwave checkout, MTN MoMo, Airtel Money, M-Pesa (live when API creds set; simulated otherwise) + Stripe |
 | Logistics | Driver assignment, live tracking, proof-of-delivery |
 | AI Services | Price estimates, route summaries, buyer reliability scores |
 | Disputes | Raise and resolve order disputes |
@@ -25,17 +25,18 @@ A mobile-first East Africa agribusiness platform connecting farmers, market vend
 - **Backend:** Django 5 + Django REST Framework, JWT auth, RBAC
 - **Frontend:** React 19 + TypeScript, Vite, mobile-first UI, dark/light mode
 - **Database:** PostgreSQL (SQLite for local dev)
-- **Payments:** Stripe (live) + mobile money provider APIs when configured
+- **Payments:** Flutterwave aggregator checkout + Stripe + mobile money provider APIs when configured
 
 ### Mobile money integration modes
 
 | Provider | Live when configured | Sandbox signup |
 |----------|---------------------|----------------|
+| Flutterwave | `FLUTTERWAVE_SECRET_KEY` = Flutterwave dashboard **Client Secret** (`FLWSECK_TEST-...` for sandbox) | [Flutterwave Dashboard](https://dashboard.flutterwave.com/) |
 | MTN MoMo | `MTN_MOMO_API_USER`, `MTN_MOMO_API_KEY`, `MTN_MOMO_SUBSCRIPTION_KEY` | [MTN MoMo Developer](https://momodeveloper.mtn.com/) |
 | Airtel Money | `AIRTEL_MONEY_CLIENT_ID`, `AIRTEL_MONEY_CLIENT_SECRET` | [Airtel Open API](https://developers.airtel.africa/) |
 | M-Pesa | `MPESA_*` vars + `MPESA_CALLBACK_URL` | [Safaricom Daraja](https://developer.safaricom.co.ke/) |
 
-Without credentials, checkout runs in **simulated** mode (clearly labeled in the UI — no fake USSD messages). With credentials, the backend calls real sandbox APIs (`requestToPay`, Airtel collect, M-Pesa STK push) and polls provider status / handles webhooks at `/api/payments/webhook/mtn/` and `/api/payments/webhook/mpesa/`.
+Without credentials, direct provider checkout runs in **simulated** mode (clearly labeled in the UI - no fake USSD messages). With Flutterwave credentials, invoices create real sandbox/live hosted checkout links and verify by transaction reference. With direct provider credentials, the backend calls sandbox APIs (`requestToPay`, Airtel collect, M-Pesa STK push) and polls provider status / handles webhooks at `/api/payments/webhook/mtn/` and `/api/payments/webhook/mpesa/`.
 - **DevOps:** Docker, GitHub Actions, deploy-ready for Railway
 
 ## Quick Start
@@ -75,6 +76,26 @@ Before opening the browser, confirm AgriPay is actually running:
 ```
 
 Use **http://127.0.0.1:5174** — not `localhost:5173` (another Vite project on this machine may answer there).
+
+### Flutterwave sandbox check
+
+Add Flutterwave test keys to `backend/.env`:
+
+- Flutterwave dashboard `Client Secret` goes into `FLUTTERWAVE_SECRET_KEY`
+- Flutterwave dashboard `Public Key` goes into `FLUTTERWAVE_PUBLIC_KEY`
+- `FLUTTERWAVE_WEBHOOK_SECRET` is optional for local dev and comes from the Flutterwave webhooks settings page, not the API keys page
+
+```powershell
+.\scripts\configure-payment-keys.ps1
+```
+
+Then restart Django and run the real sandbox card flow:
+
+```powershell
+.\backend\venv\Scripts\python.exe .\scripts\e2e-real-payment.py
+```
+
+The app reports Flutterwave as `operational` only when `FLUTTERWAVE_SECRET_KEY` is set.
 
 ### Demo accounts
 
