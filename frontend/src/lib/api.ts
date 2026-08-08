@@ -279,6 +279,7 @@ export const authApi = {
   register: (data: Record<string, string>) =>
     api<User>('/auth/register/', { method: 'POST', body: JSON.stringify(data) }),
   me: () => api<User>('/auth/me/'),
+  updateMe: (data: Partial<User>) => api<User>('/auth/me/', { method: 'PATCH', body: JSON.stringify(data) }),
   onboarding: () => api<{ onboarding_complete: boolean; profile: unknown }>('/auth/onboarding/'),
   submitOnboarding: (data: Record<string, unknown>) =>
     api('/auth/onboarding/', { method: 'POST', body: JSON.stringify(data) }),

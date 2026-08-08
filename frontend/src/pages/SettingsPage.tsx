@@ -2,16 +2,25 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCapabilities } from '../context/CapabilitiesContext';
-import { COUNTRIES } from '../lib/api';
+import { COUNTRIES, authApi } from '../lib/api';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const caps = useCapabilities();
   const { theme, toggleTheme } = useTheme();
-  const country = user?.country ? COUNTRIES[user.country as keyof typeof COUNTRIES] : null;
+  const [selectedCountry, setSelectedCountry] = useState<keyof typeof COUNTRIES>('UG');
+  const [savingCountry, setSavingCountry] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [smsAlerts, setSmsAlerts] = useState(true);
   const [whatsappAlerts, setWhatsappAlerts] = useState(true);
   const [deferredPrompt, setDeferredPrompt] = useState<{ prompt: () => Promise<void> } | null>(null);
+
+  useEffect(() => {
+    if (user?.country) {
+      setSelectedCountry(user.country as keyof typeof COUNTRIES);
+    }
+  }, [user?.country]);
 
   useEffect(() => {
     setSmsAlerts(localStorage.getItem('notify_sms') !== 'false');
@@ -37,6 +46,25 @@ export default function SettingsPage() {
     }
   };
 
+  const saveCountry = async () => {
+    if (!user || selectedCountry === user.country) {
+      return;
+    }
+    setSavingCountry(true);
+    setSaveError('');
+    setSaveMessage('');
+    try {
+      await authApi.updateMe({ country: selectedCountry });
+      await refreshUser();
+      setSaveMessage('Country updated successfully.');
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to update country.');
+    } finally {
+      setSavingCountry(false);
+      window.setTimeout(() => setSaveMessage(''), 4000);
+    }
+  };
+
   return (
     <div className="page">
       <h1 className="page-title">Settings</h1>
@@ -51,12 +79,39 @@ export default function SettingsPage() {
         </div>
         <div className="list-item">
           <span>Country</span>
-          <strong>{country ? `${country.flag} ${country.name}` : '—'}</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', justifyContent: 'space-between' }}>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value as keyof typeof COUNTRIES)}
+              style={{ flex: 1, minWidth: '8rem' }}
+            >
+              {(Object.entries(COUNTRIES) as [keyof typeof COUNTRIES, { name: string; currency: string; flag: string }][]).map(([code, data]) => (
+                <option key={code} value={code}>
+                  {data.flag} {data.name}
+                </option>
+              ))}
+            </select>
+            {selectedCountry !== user?.country && (
+              <button className="btn btn-primary" disabled={savingCountry} onClick={saveCountry}>
+                {savingCountry ? 'Saving…' : 'Save'}
+              </button>
+            )}
+          </div>
         </div>
         <div className="list-item">
           <span>Currency</span>
-          <strong>{user?.currency}</strong>
+          <strong>{COUNTRIES[selectedCountry]?.currency ?? user?.currency}</strong>
         </div>
+        {saveMessage && (
+          <div className="list-item" style={{ color: 'var(--success)', paddingTop: '0.75rem' }}>
+            {saveMessage}
+          </div>
+        )}
+        {saveError && (
+          <div className="list-item" style={{ color: 'var(--danger)', paddingTop: '0.75rem' }}>
+            {saveError}
+          </div>
+        )}
         <div className="list-item">
           <span>Theme</span>
           <button className="btn btn-secondary" onClick={toggleTheme}>

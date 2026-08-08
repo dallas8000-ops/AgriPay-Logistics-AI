@@ -49,6 +49,14 @@ Without credentials, direct provider checkout runs in **simulated** mode (clearl
 .\scripts\dev.ps1
 ```
 
+This starts both backend and frontend, verifies `127.0.0.1:8000` and `127.0.0.1:5174`, and opens the app if healthy.
+
+To start without opening the browser:
+
+```powershell
+.\scripts\dev.ps1 -NoOpen
+```
+
 **Manual start:**
 
 ```bash
@@ -75,8 +83,9 @@ Before opening the browser, confirm AgriPay is actually running:
 .\scripts\open-app.ps1
 ```
 
-Use **http://127.0.0.1:5174** — not `localhost:5173` (another Vite project on this machine may answer there).
-
+`open-app.ps1` will launch the verified frontend URL: **http://127.0.0.1:5174/login**.
+Use **127.0.0.1:5174** — not `localhost:5173` (another Vite project on this machine may answer there).
+In the app, country selection can now be updated from **Settings** so your profile uses the desired market region.
 ### Flutterwave sandbox check
 
 Add Flutterwave test keys to `backend/.env`:
@@ -176,8 +185,11 @@ Legacy manual scripts (`setup-railway.ps1`, `setup-stripe.ps1`) now delegate to 
 | `POST /api/marketplace/orders/` | Place order |
 | `POST /api/payments/` | Initiate payment |
 | `POST /api/ai/price-estimate/` | AI crop pricing |
+| `GET /api/ai/market-overview/` | Market snapshot overview |
 | `GET /api/logistics/` | Delivery tracking |
 | `GET /api/disputes/` | Dispute center |
+
+`/api/ai/market-overview/` returns the current market snapshot metadata, supported countries/crops, and source/update timestamps. `/api/ai/price-estimate/` returns local wholesale pricing estimates from the RATIN-aligned market snapshot and live FX data.
 
 ## Deploy (Railway)
 
