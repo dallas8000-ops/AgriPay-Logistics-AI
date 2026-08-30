@@ -246,7 +246,6 @@ export async function api<T>(
   if (res.status === 401) {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    window.location.href = '/login';
     throw new Error('Unauthorized');
   }
   if (!res.ok) {

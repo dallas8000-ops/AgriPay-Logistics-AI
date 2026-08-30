@@ -32,7 +32,7 @@ def serve_spa(request, path: str = "") -> FileResponse:
 
 class DemoRedirectView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect("/login/")
+        return HttpResponseRedirect("/")
 
 
 def spa_catchall(request):
