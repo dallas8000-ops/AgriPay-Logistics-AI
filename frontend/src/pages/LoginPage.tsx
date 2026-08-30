@@ -79,7 +79,7 @@ export default function LoginPage() {
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
         <p className="auth-footer">
-          New here? <Link to="/register">Create account</Link>
+          New here? <Link to="/register">Create account</Link> • <Link to="/landing">View product overview</Link>
         </p>
         <details className="demo-hint">
           <summary>Demo accounts (Uganda / UGX)</summary>

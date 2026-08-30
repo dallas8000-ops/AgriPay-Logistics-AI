@@ -20,6 +20,7 @@ import InvoicesPage from './pages/InvoicesPage';
 import InvoicePayPage from './pages/InvoicePayPage';
 import PublicPayPage from './pages/PublicPayPage';
 import ReconciliationPage from './pages/ReconciliationPage';
+import LandingPage from './pages/LandingPage';
 import './auth.css';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   if (loading) return <div className="page"><p className="empty-state">Loading…</p></div>;
   if (!user) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
+}
+
+function RootRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="page"><p className="empty-state">Loading…</p></div>;
+  if (!user) return <LandingPage />;
+  return <Layout><HomePage /></Layout>;
 }
 
 function AgriOnlyRoute({ children }: { children: React.ReactNode }) {
@@ -38,10 +46,11 @@ function AgriOnlyRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/pay/:ref" element={<PublicPayPage />} />
-      <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+      <Route path="/" element={<RootRoute />} />
       <Route path="/onboarding" element={<PrivateRoute><OnboardingPage /></PrivateRoute>} />
       <Route path="/marketplace" element={<PrivateRoute><AgriOnlyRoute><MarketplacePage /></AgriOnlyRoute></PrivateRoute>} />
       <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />

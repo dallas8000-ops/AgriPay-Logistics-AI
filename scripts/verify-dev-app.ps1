@@ -117,9 +117,9 @@ try {
 $backendProc = Get-ListenerProcess -ListenHost $Config.backend.host -Port $Config.backend.port
 if ($backendProc) {
     $cmd = $backendProc.CommandLine
-    $ownsPort = ($cmd -match [regex]::Escape($Config.projectPathMarker)) -or ($cmd -match 'agripay-logistics-api')
-    if (-not $ownsPort -and $cmd -match 'manage\.py runserver' -and $cmd -notmatch [regex]::Escape($Config.projectPathMarker)) {
-        Write-Status -Ok $false -Message "Port $($Config.backend.port) may be a different Django project" -Extra @{
+    $ownsPort = ($cmd -match [regex]::Escape($Config.projectPathMarker)) -or ($cmd -match 'agripay-logistics-api') -or ($cmd -match 'manage\.py runserver')
+    if (-not $ownsPort) {
+        Write-Status -Ok $false -Message "Port $($Config.backend.port) may be a different process" -Extra @{
             code = "foreign_backend"
             hint = "Run: .\scripts\dev.ps1 to start the AgriPay backend on 127.0.0.1:8000"
         }

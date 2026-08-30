@@ -83,7 +83,7 @@ export default function RegisterPage() {
           {loading ? 'Creating…' : 'Create account'}
         </button>
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to="/login">Sign in</Link> • <Link to="/landing">View overview</Link>
         </p>
       </form>
     </div>

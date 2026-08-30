@@ -1,7 +1,7 @@
 {
-  "deployedAt": "2026-06-25T02:57:23.516250+00:00",
+  "deployedAt": "2026-06-25T06:06:53.368652+00:00",
   "platform": "railway",
-  "productionUrl": "http://127.0.0.1:8000",
+  "productionUrl": "https://agripay-api-production.up.railway.app",
   "postgresProvider": null,
-  "readinessScore": 94
+  "readinessScore": 100
 }
