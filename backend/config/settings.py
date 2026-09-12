@@ -6,6 +6,17 @@ from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN", ""),
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=0.1,     # perf monitoring sample rate
+    send_default_pii=False,     # don't leak user PII into Sentry — matches your security posture
+    environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+)
+
 SECRET_KEY = config("SECRET_KEY", default="dev-only-change-in-production")
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())

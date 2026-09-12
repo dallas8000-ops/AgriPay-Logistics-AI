@@ -13,6 +13,7 @@ whitenoise>=6.6,<7.0
 celery>=5.4,<6.0
 redis>=5.0,<6.0
 requests>=2.31,<3.0
+sentry-sdk
 
 # Testing
 pytest>=8.0
