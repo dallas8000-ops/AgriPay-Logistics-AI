@@ -81,16 +81,18 @@ export default function LoginPage() {
         <p className="auth-footer">
           New here? <Link to="/register">Create account</Link> • <Link to="/landing">View product overview</Link>
         </p>
-        <details className="demo-hint">
-          <summary>Demo accounts (Uganda / UGX)</summary>
-          <p className="demo-hint-lead">Primary portfolio demo — sign in as the farmer to try invoices and SMS reconcile.</p>
-          <ul>
-            <li><strong>james_farmer</strong> / demo12345 — Mbale farmer, MTN MoMo +256</li>
-            <li>mary_buyer / demo12345 — Kampala buyer</li>
-            <li>peter_driver / demo12345</li>
-            <li>admin / admin12345</li>
-          </ul>
-        </details>
+        {/* Local-dev credentials only (vite dev server). Production builds never ship them. */}
+        {import.meta.env.DEV && (
+          <details className="demo-hint">
+            <summary>Demo accounts (local dev)</summary>
+            <p className="demo-hint-lead">Seeded by <code>python manage.py seed_demo</code>. Sign in as the farmer to try invoices and SMS reconcile.</p>
+            <ul>
+              <li><strong>james_farmer</strong> / demo12345 — Mbale farmer, MTN MoMo +256</li>
+              <li>mary_buyer / demo12345 — Kampala buyer</li>
+              <li>peter_driver / demo12345</li>
+            </ul>
+          </details>
+        )}
       </form>
     </div>
   );

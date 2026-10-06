@@ -1,11 +1,48 @@
-from django.core.management.base import BaseCommand
+import os
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 
 from apps.accounts.models import BuyerProfile, DriverProfile, FarmerProfile, User, VendorProfile
 from apps.marketplace.models import ProduceListing
 
 
+# Local-development defaults only. They are never used when DEBUG is False.
+_DEV_ADMIN_PASSWORD = "admin12345"
+_DEV_USER_PASSWORD = "demo12345"
+
+
 class Command(BaseCommand):
     help = "Seed demo data for AgriPay Logistics AI"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--allow-production",
+            action="store_true",
+            help=(
+                "Permit seeding when DEBUG is False. Requires DEMO_ADMIN_PASSWORD "
+                "and DEMO_USER_PASSWORD to be set; hardcoded defaults are refused."
+            ),
+        )
+
+    def _resolve_passwords(self, allow_production: bool) -> tuple[str, str]:
+        admin_pw = os.environ.get("DEMO_ADMIN_PASSWORD", "").strip()
+        user_pw = os.environ.get("DEMO_USER_PASSWORD", "").strip()
+        if settings.DEBUG:
+            return admin_pw or _DEV_ADMIN_PASSWORD, user_pw or _DEV_USER_PASSWORD
+        if not allow_production:
+            raise CommandError(
+                "seed_demo refuses to run with DEBUG=False. It creates a superuser and "
+                "demo accounts. Re-run with --allow-production and set "
+                "DEMO_ADMIN_PASSWORD / DEMO_USER_PASSWORD if this is intentional."
+            )
+        weak = {"", _DEV_ADMIN_PASSWORD, _DEV_USER_PASSWORD}
+        if admin_pw in weak or user_pw in weak or min(len(admin_pw), len(user_pw)) < 12:
+            raise CommandError(
+                "DEMO_ADMIN_PASSWORD and DEMO_USER_PASSWORD must be set to unique values "
+                "of at least 12 characters when seeding with DEBUG=False."
+            )
+        return admin_pw, user_pw
 
     def _align_demo_personas(self) -> None:
         """Keep primary demo accounts Uganda/UGX for portfolio consistency."""
@@ -49,6 +86,7 @@ class Command(BaseCommand):
             pass
 
     def handle(self, *args, **options):
+        admin_pw, user_pw = self._resolve_passwords(options["allow_production"])
         self._align_demo_personas()
 
         if User.objects.filter(username="admin").exists():
@@ -56,12 +94,12 @@ class Command(BaseCommand):
             return
 
         admin = User.objects.create_superuser(
-            "admin", "admin@agripay.africa", "admin12345", role=User.Role.ADMIN, country="KE"
+            "admin", "admin@agripay.africa", admin_pw, role=User.Role.ADMIN, country="KE"
         )
         farmer = User.objects.create_user(
             "james_farmer",
             "james@agripay.africa",
-            "demo12345",
+            user_pw,
             role=User.Role.FARMER,
             country="UG",
             phone="+256772123456",
@@ -80,7 +118,7 @@ class Command(BaseCommand):
         buyer = User.objects.create_user(
             "mary_buyer",
             "mary@agripay.africa",
-            "demo12345",
+            user_pw,
             role=User.Role.BUYER,
             country="UG",
             phone="+256701234567",
@@ -98,7 +136,7 @@ class Command(BaseCommand):
         driver = User.objects.create_user(
             "peter_driver",
             "peter@agripay.africa",
-            "demo12345",
+            user_pw,
             role=User.Role.DRIVER,
             country="TZ",
             phone="+255754321098",
@@ -117,7 +155,7 @@ class Command(BaseCommand):
         vendor = User.objects.create_user(
             "grace_vendor",
             "grace@agripay.africa",
-            "demo12345",
+            user_pw,
             role=User.Role.VENDOR,
             country="RW",
             phone="+250788123456",
@@ -173,5 +211,10 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS("Demo data seeded successfully."))
-        self.stdout.write("Admin: admin / admin12345")
-        self.stdout.write("Demo users: james_farmer, mary_buyer, peter_driver, grace_vendor / demo12345")
+        if settings.DEBUG:
+            self.stdout.write(f"Admin: admin / {admin_pw}")
+            self.stdout.write(
+                f"Demo users: james_farmer, mary_buyer, peter_driver, grace_vendor / {user_pw}"
+            )
+        else:
+            self.stdout.write("Credentials taken from DEMO_ADMIN_PASSWORD / DEMO_USER_PASSWORD.")
