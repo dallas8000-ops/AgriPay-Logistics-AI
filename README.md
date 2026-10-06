@@ -4,6 +4,13 @@ A mobile-first East Africa agribusiness platform connecting farmers, market vend
 
 **Supported countries:** Uganda, Kenya, Tanzania, Rwanda
 
+> **At a glance**
+> - **What:** a mobile-first marketplace and logistics platform for East African agribusiness. Farmers, vendors, buyers and drivers trade produce and settle by mobile money.
+> - **Stack:** Django 5 + DRF · React 19 + TypeScript (Vite) · PostgreSQL · Celery · installable offline-capable PWA · Docker · Railway
+> - **Payments:** Flutterwave, MTN MoMo, Airtel Money, M-Pesa and Stripe, with webhook signature verification (covered by tests) and simulated mode when credentials are absent
+> - **Security:** JWT auth with role-based access per persona · production boot refuses dev `SECRET_KEY` · demo seeding locked out of production unless explicitly enabled with env-supplied passwords
+> - **Quality:** backend test suite and frontend build in CI on every push and pull request
+
 ## Features
 
 | Module | Description |
@@ -14,7 +21,6 @@ A mobile-first East Africa agribusiness platform connecting farmers, market vend
 | Logistics | Driver assignment, live tracking, proof-of-delivery |
 | AI Services | Price estimates, route summaries, buyer reliability scores |
 | Disputes | Raise and resolve order disputes |
-| Admin | Platform stats dashboard |
 | Offline | Queue actions locally, sync when back online |
 | Notifications | In-app + SMS/WhatsApp-style alerts (event-driven) |
 | PWA | Installable app with offline caching & action queue |
@@ -108,15 +114,12 @@ The app reports Flutterwave as `operational` only when `FLUTTERWAVE_SECRET_KEY` 
 
 ### Demo accounts
 
-Primary demo persona is **Uganda** (UGX, MTN MoMo) — sign in as `james_farmer` for invoices and SMS reconcile.
+`python manage.py seed_demo` creates a demo admin plus four role-based personas (farmer, buyer, driver, vendor). The primary persona is **Uganda** (UGX, MTN MoMo): sign in as `james_farmer` for invoices and SMS reconcile.
 
-| User | Password | Role |
-|------|----------|------|
-| admin | admin12345 | Admin |
-| james_farmer | demo12345 | Farmer (Mbale, UG) |
-| mary_buyer | demo12345 | Buyer (Kampala, UG) |
-| peter_driver | demo12345 | Driver |
-| grace_vendor | demo12345 | Vendor |
+- **Local development (`DEBUG=True`):** the command prints the generated credentials to your terminal. They are local-only defaults.
+- **Production (`DEBUG=False`):** the command refuses to run unless you pass `--allow-production` and set `DEMO_ADMIN_PASSWORD` and `DEMO_USER_PASSWORD` (12+ characters, not the dev defaults). Credentials are never printed.
+
+Evaluation access to the hosted demo is available on request: [dallas8000@gmail.com](mailto:dallas8000@gmail.com).
 
 ### Docker
 
