@@ -6,7 +6,7 @@ Score: 100/100
 - [✓] **Database backup script**: Backup scripts exist
 
 ## Database
-- [✓] **DATABASE_URL configured**: Database URL set (postgresql)
+- [✓] **DATABASE_URL configured**: Database URL set (${{Postgres.DATABASE_URL}})
 - [✓] **Database schema file**: db/schema.sql exists
 
 ## Deploy
@@ -26,7 +26,7 @@ Score: 100/100
 
 ## Ssl
 - [✓] **HTTPS production URL**: Production URL uses HTTPS
-- [✓] **Production site reachable**: HTTP 404
+- [✓] **Production site reachable**: HTTP 200
 
 ## Stripe
 - [✓] **Stripe secret key**: Valid (live mode, balance available)

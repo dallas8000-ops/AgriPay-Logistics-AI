@@ -1,7 +1,7 @@
 {
   "createdAt": "2026-06-25T02:57:02.053944+00:00",
-  "updatedAt": "2026-07-05T06:51:15.343152+00:00",
-  "accountId": null,
+  "updatedAt": "2026-10-02T15:44:16.988654+00:00",
+  "accountId": "acct_1TVQpaRxznXvj6jh",
   "products": [
     {
       "id": "prod_UgdnrglonWJRHJ",
@@ -57,10 +57,13 @@
     }
   ],
   "webhookEndpoint": {
-    "id": "we_1TpjtXRxznXvj6jhnWwG2duQ",
+    "id": "we_1UM8dARxznXvj6jhyvfoS7Dn",
     "url": "https://agripay-api-production.up.railway.app/webhooks/stripe/",
     "reused": false
   },
-  "billingPortalConfig": null,
+  "billingPortalConfig": {
+    "id": "bpc_1UM2f7RxznXvj6jhOHkPloap",
+    "reused": true
+  },
   "appUrl": "https://agripay-api-production.up.railway.app"
 }
